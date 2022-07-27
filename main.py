@@ -76,12 +76,16 @@ class FlowChart(tkinter.Tk):
         button_run_a_flow_chart_command.grid(row=0, column=0, sticky='w')
         button_run_a_flow_chart_command.bind("<ButtonRelease-1>", self._run_a_command)
 
+        button_run_all_commands = ttk.Button(buttons_frame, text="Run all commands")
+        button_run_all_commands.grid(row=1, column=0, sticky='w')
+        button_run_all_commands.bind("<ButtonRelease-1>", self._run_all_remaining_commands)
+
         button_send_commands_to_canvas = ttk.Button(buttons_frame, text="Send commands json to canvas")
-        button_send_commands_to_canvas.grid(row=1, column=0, sticky='w')
+        button_send_commands_to_canvas.grid(row=2, column=0, sticky='w')
         button_send_commands_to_canvas.bind("<ButtonRelease-1>", self._re_read_commands_from_text)
 
         button_reset_text = ttk.Button(buttons_frame, text="Reset commands text")
-        button_reset_text.grid(row=2, column=0, sticky='w')
+        button_reset_text.grid(row=3, column=0, sticky='w')
         if self._commands_text_file_path is None:
             button_reset_text.state(["disabled"])
         button_reset_text.bind("<ButtonRelease-1>", self._reset_commands_text_to_original)
@@ -127,8 +131,8 @@ class FlowChart(tkinter.Tk):
                     print("Changed discarded")
         tkinter.Tk.destroy(self)
 
-    def _run_a_command(self, event):
-        if not event.widget.instate(["!disabled", "hover"]):
+    def _run_a_command(self, event=None):
+        if event is not None and not event.widget.instate(["!disabled", "hover"]):
             return
 
         try:
@@ -245,6 +249,13 @@ class FlowChart(tkinter.Tk):
             self._canvas.create_text(x, y, anchor="n", fill=color, tags=tags, text=box_text, justify=tkinter.CENTER)
         x1, y1, x2, y2 = self._canvas.bbox(obj_id)
         return x, y, x1, y1, x2, y2, tags
+
+    def _run_all_remaining_commands(self, event):
+        if not event.widget.instate(["!disabled", "hover"]):
+            return
+
+        while len(self._commands) > 0:
+            self._run_a_command()
 
 
 def main():
