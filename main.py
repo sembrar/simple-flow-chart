@@ -8,6 +8,8 @@ from tkinter import messagebox
 from MyModules.Widgets.ScrolledWidgets.ScrolledCanvas import ScrolledCanvas
 from MyModules.Widgets.ScrolledWidgets.ScrolledText import ScrolledText
 
+import json
+
 
 class FlowChart(tkinter.Tk):
 
@@ -47,6 +49,44 @@ class FlowChart(tkinter.Tk):
                     self._text.insert("1.0", self._original_text)
             except IOError:
                 pass
+
+        self._commands = []
+
+        buttons_frame = ttk.Frame(label_frame_for_text)
+        buttons_frame.grid(row=1, column=0, sticky='ew')
+
+        button_run_a_flow_chart_command = ttk.Button(buttons_frame, text="Run next command")
+        button_run_a_flow_chart_command.grid(row=0, column=0, sticky='w')
+
+        button_send_commands_to_canvas = ttk.Button(buttons_frame, text="Send commands json to canvas")
+        button_send_commands_to_canvas.grid(row=1, column=0, sticky='w')
+        button_send_commands_to_canvas.bind("<ButtonRelease-1>", self._re_read_commands_from_text)
+
+        button_reset_text = ttk.Button(buttons_frame, text="Reset commands text")
+        button_reset_text.grid(row=2, column=0, sticky='w')
+        if self._commands_text_file_path is None:
+            button_reset_text.state(["disabled"])
+        button_reset_text.bind("<ButtonRelease-1>", self._reset_commands_text_to_original)
+
+    def _re_read_commands_from_text(self, event=None):
+        if event is not None:
+            if not event.widget.instate(["!disabled", "hover"]):
+                return
+
+        try:
+            self._commands = json.loads(self._text.get("1.0", tkinter.END))
+            self._commands.reverse()
+            messagebox.showinfo("Success", "{} commands read".format(len(self._commands)))
+        except json.JSONDecodeError:
+            messagebox.showerror("Bad JSON", "Commands text JSON couldn't be decoded")
+            self._commands = []
+
+    def _reset_commands_text_to_original(self, event):
+        if not event.widget.instate(["!disabled", "hover"]):
+            return
+        self._text.delete("1.0", tkinter.END)
+        self._text.insert("1.0", self._original_text)
+        self._re_read_commands_from_text()
 
     def destroy(self):
         if self._commands_text_file_path is not None:
