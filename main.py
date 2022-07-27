@@ -11,6 +11,12 @@ from MyModules.Widgets.ScrolledWidgets.ScrolledText import ScrolledText
 import json
 
 
+PADDING_FOR_NEW_OBJECT = 50
+PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT = 10
+DEFAULT_COLOR_TEXT = "black"
+DEFAULT_COLOR_BOXES = "black"
+
+
 class FlowChart(tkinter.Tk):
 
     def __init__(self, commands_text_file_path=None):
@@ -115,11 +121,46 @@ class FlowChart(tkinter.Tk):
 
         try:
             command_data = self._commands.pop()
-            if command_data["type"] == "title":
+            command_type = command_data["type"]
+
+            if command_type == "title":
                 self._label_frame_for_canvas.configure(text=command_data["text"])
                 return
+
+            if command_type == "start" or command_type == "stop":
+
+                x, y = self._get_x_middle_y_lower_from_lowest_canvas_object()
+                y += PADDING_FOR_NEW_OBJECT
+
+                try:
+                    color = command_data["color"]
+                except KeyError:
+                    color = DEFAULT_COLOR_TEXT
+
+                tags = (command_type, command_data["name"])
+                obj_id =\
+                    self._canvas.create_text(x, y, anchor="n", fill=color, tags=tags, text=str(command_type).title())
+                x1, y1, x2, y2 = self._canvas.bbox(obj_id)
+                self._canvas.create_oval(
+                    x1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
+                    x2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
+                    tags=tags)
+                return
+
         except Exception as e:
-            messagebox.showerror("Error", "{}".format(e.args))
+            messagebox.showerror("Error occurred", "Please see command prompt window for details")
+            raise e
+
+    def _get_x_middle_y_lower_from_lowest_canvas_object(self):
+        x = None
+        y = 0
+        object_ids = self._canvas.find_all()
+        for obj_id in object_ids:
+            x1, y1, x2, y2 = self._canvas.bbox(obj_id)
+            y = max(y, y1, y2)
+        if x is None:
+            x = int(self._canvas.cget("width")) / 2
+        return x, y
 
 
 def main():
