@@ -132,7 +132,11 @@ class FlowChart(tkinter.Tk):
             return
 
         try:
-            command_data = self._commands.pop()
+            try:
+                command_data = self._commands.pop()
+            except IndexError:
+                return
+
             command_type = command_data["type"]
 
             if command_type == "title":
