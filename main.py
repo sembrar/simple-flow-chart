@@ -86,7 +86,8 @@ class FlowChart(tkinter.Tk):
         try:
             self._commands = json.loads(self._text.get("1.0", tkinter.END))
             self._commands.reverse()
-            messagebox.showinfo("Success", "{} commands read".format(len(self._commands)))
+            if event is not None:
+                messagebox.showinfo("Success", "{} commands read".format(len(self._commands)))
         except json.JSONDecodeError:
             messagebox.showerror("Bad JSON", "Commands text JSON couldn't be decoded")
             self._commands = []
