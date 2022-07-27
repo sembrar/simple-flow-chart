@@ -108,6 +108,7 @@ class FlowChart(tkinter.Tk):
         try:
             self._commands = json.loads(self._text.get("1.0", tkinter.END))
             self._commands.reverse()
+            self._canvas.delete("canvas-obj")
             if event is not None:
                 messagebox.showinfo("Success", "{} commands read".format(len(self._commands)))
         except json.JSONDecodeError:
