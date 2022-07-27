@@ -57,6 +57,7 @@ class FlowChart(tkinter.Tk):
 
         button_run_a_flow_chart_command = ttk.Button(buttons_frame, text="Run next command")
         button_run_a_flow_chart_command.grid(row=0, column=0, sticky='w')
+        button_run_a_flow_chart_command.bind("<ButtonRelease-1>", self._run_a_command)
 
         button_send_commands_to_canvas = ttk.Button(buttons_frame, text="Send commands json to canvas")
         button_send_commands_to_canvas.grid(row=1, column=0, sticky='w')
@@ -107,6 +108,18 @@ class FlowChart(tkinter.Tk):
                 else:
                     print("Changed discarded")
         tkinter.Tk.destroy(self)
+
+    def _run_a_command(self, event):
+        if not event.widget.instate(["!disabled", "hover"]):
+            return
+
+        try:
+            command_data = self._commands.pop()
+            if command_data["type"] == "title":
+                self._label_frame_for_canvas.configure(text=command_data["text"])
+                return
+        except Exception as e:
+            messagebox.showerror("Error", "{}".format(e.args))
 
 
 def main():
