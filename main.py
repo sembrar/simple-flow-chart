@@ -90,6 +90,13 @@ class FlowChart(tkinter.Tk):
             button_reset_text.state(["disabled"])
         button_reset_text.bind("<ButtonRelease-1>", self._reset_commands_text_to_original)
 
+        # bind left-click-hold-and-drag to move flow chart boxes
+        self._box_name_tag_being_moved = None
+        self._moving_old_x, self._moving_old_y = 0, 0
+        self._canvas.bind("<Button-1>", self._left_button_click_on_canvas)
+        self._canvas.bind("<Motion>", self._mouse_move_on_canvas)
+        self._canvas.bind("<ButtonRelease-1>", self._left_button_release_on_canvas)
+
         if self._commands_text_file_path is not None:
             self._re_read_commands_from_text(None)
 
@@ -247,7 +254,7 @@ class FlowChart(tkinter.Tk):
         x, y = self._get_x_middle_y_lower_from_lowest_canvas_object()
         y += PADDING_FOR_NEW_OBJECT
 
-        tags = (box_type, box_name)
+        tags = (box_type, "name:" + box_name)
         obj_id = \
             self._canvas.create_text(x, y, anchor="n", fill=color, tags=tags, text=box_text, justify=tkinter.CENTER)
         x1, y1, x2, y2 = self._canvas.bbox(obj_id)
@@ -259,6 +266,41 @@ class FlowChart(tkinter.Tk):
 
         while len(self._commands) > 0:
             self._run_a_command()
+
+    def _left_button_click_on_canvas(self, event):
+        # print("Left button click release on canvas")
+        try:
+            closest_obj = self._canvas.find_closest(event.x, event.y)[0]
+        except IndexError:
+            # print("No closest object found")
+            return
+
+        tags_closest_obj = self._canvas.gettags(closest_obj)
+        if "connector" in tags_closest_obj:  # connectors are automatic, they should not be moved
+            return
+
+        self._box_name_tag_being_moved = None
+        for tag in tags_closest_obj:
+            if tag.startswith("name:"):
+                self._box_name_tag_being_moved = tag
+                self._moving_old_x = event.x
+                self._moving_old_y = event.y
+                break
+
+        # print("Closest:", closest_obj, "Tags:", tags_closest_obj)
+
+    def _left_button_release_on_canvas(self, _):
+        # print("Left button release on canvas")
+        self._box_name_tag_being_moved = None
+
+    def _mouse_move_on_canvas(self, event):
+        if self._box_name_tag_being_moved is None:
+            return
+        dx = event.x - self._moving_old_x
+        dy = event.y - self._moving_old_y
+        self._canvas.move(self._box_name_tag_being_moved, dx, dy)
+        self._moving_old_x = event.x
+        self._moving_old_y = event.y
 
 
 def main():
