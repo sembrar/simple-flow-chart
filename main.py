@@ -137,12 +137,22 @@ class FlowChart(tkinter.Tk):
                 self._label_frame_for_canvas.configure(text=command_data["text"])
                 return
 
+            allowed_command_types = ("start", "stop", "operation", "decision")
+            if command_type not in allowed_command_types:
+                raise ValueError("CommandType {} not in allowed {}".format(command_type, allowed_command_types))
+
             if command_type == "start" or command_type == "stop":
-                _, _, x1, y1, x2, y2, tags =\
-                    self._put_text_below_lowest_canvas_object_and_get_north_x_y_and_bbox_tags_as_seven_tuple(
-                        command_data["color"] if "color" in command_data else DEFAULT_COLOR_BOX_TEXT,
-                        command_type, command_data["name"], str(command_type).title()
-                    )
+                box_text = command_type.title()
+            else:
+                box_text = command_data["text"]
+
+            _, _, x1, y1, x2, y2, tags = \
+                self._put_text_below_lowest_canvas_object_and_get_north_x_y_and_bbox_tags_as_seven_tuple(
+                    command_data["color"] if "color" in command_data else DEFAULT_COLOR_BOX_TEXT,
+                    command_type, command_data["name"], box_text
+                )
+
+            if command_type == "start" or command_type == "stop":
                 self._canvas.create_oval(
                     x1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
                     x2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
@@ -150,11 +160,6 @@ class FlowChart(tkinter.Tk):
                 return
 
             if command_type == "operation":
-                _, _, x1, y1, x2, y2, tags = \
-                    self._put_text_below_lowest_canvas_object_and_get_north_x_y_and_bbox_tags_as_seven_tuple(
-                        command_data["color"] if "color" in command_data else DEFAULT_COLOR_BOX_TEXT,
-                        command_type, command_data["name"], command_data["text"]
-                    )
                 self._canvas.create_rectangle(
                     x1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
                     x2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
@@ -162,11 +167,6 @@ class FlowChart(tkinter.Tk):
                 return
 
             if command_type == "decision":
-                _, _, x1, y1, x2, y2, tags = \
-                    self._put_text_below_lowest_canvas_object_and_get_north_x_y_and_bbox_tags_as_seven_tuple(
-                        command_data["color"] if "color" in command_data else DEFAULT_COLOR_BOX_TEXT,
-                        command_type, command_data["name"], command_data["text"]
-                    )
                 return
 
         except Exception as e:
