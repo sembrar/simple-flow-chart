@@ -15,7 +15,7 @@ PADDING_FOR_NEW_OBJECT = 50
 PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT = 10
 DEFAULT_COLOR_BOX_TEXT = "black"
 DEFAULT_COLOR_BOX_BOUNDARY = "black"
-DEFAULT_DECISION_BOX_ACUTE_ANGLE = 80
+DEFAULT_DECISION_BOX_ACUTE_ANGLE = 60
 
 
 class FlowChart(tkinter.Tk):
@@ -197,11 +197,11 @@ class FlowChart(tkinter.Tk):
                 # print("dx,dy:", dx, dy)
 
                 if dy < dx:
-                    angle_to_use_for_x_extremes = acute_angle
-                    angle_to_use_for_y_extremes = obtuse_angle
+                    angle_to_use_for_x_extremes = acute_angle / 2
+                    angle_to_use_for_y_extremes = obtuse_angle / 2
                 else:
-                    angle_to_use_for_x_extremes = obtuse_angle
-                    angle_to_use_for_y_extremes = acute_angle
+                    angle_to_use_for_x_extremes = obtuse_angle / 2
+                    angle_to_use_for_y_extremes = acute_angle / 2
 
                 # print("Angles:x,y:", angle_to_use_for_x_extremes, angle_to_use_for_y_extremes)
 
