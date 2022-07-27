@@ -273,8 +273,8 @@ class FlowChart(tkinter.Tk):
 
                 # print("deltas for rhombus:x,y:", dx_for_rhombus, dy_for_rhombus)
 
-                point_east = x1 - dx_for_rhombus, y1 + int(dy / 2)
-                point_west = x2 + dx_for_rhombus, y1 + int(dy / 2)
+                point_west = x1 - dx_for_rhombus, y1 + int(dy / 2)
+                point_east = x2 + dx_for_rhombus, y1 + int(dy / 2)
                 point_north = x1 + int(dx / 2), y1 - dy_for_rhombus
                 point_south = x1 + int(dx / 2), y2 + dy_for_rhombus
 
@@ -286,8 +286,25 @@ class FlowChart(tkinter.Tk):
                     *point_north, *point_east, *point_south, *point_west,
                     fill='', outline=DEFAULT_COLOR_BOX_BOUNDARY, tags=tags)
 
-                self._canvas.move(text_id, 0, abs(point_north[1] - y))
-                self._canvas.move(rhombus_id, 0, abs(point_north[1] - y))
+                for decision in ("yes", "no"):
+                    try:
+                        corner = command_data[decision]
+                        if corner == "north":
+                            point = point_north
+                        elif corner == "south":
+                            point = point_south
+                        elif corner == "east":
+                            point = point_east
+                        elif corner == "west":
+                            point = point_west
+                        else:
+                            raise ValueError("decision box yes unknown corner {}".format(corner))
+                        self._canvas.create_text(*point, text=decision.title(), tags=tags,
+                                                 fill={"yes": "green", "no": "blue"}[decision])
+                    except KeyError:
+                        pass
+
+                self._canvas.move("name:" + command_data["name"], 0, abs(point_north[1] - y))
                 return
 
         except Exception as e:
