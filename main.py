@@ -177,18 +177,28 @@ class FlowChart(tkinter.Tk):
                     for ((which_x, x_inc), (which_y, y_inc)) in intermediate_points_data:
 
                         if which_x == "start_x":
-                            x = start_x + x_inc
+                            x = start_x
                         elif which_x == "end_x":
-                            x = end_x + x_inc
+                            x = end_x
+                        elif which_x == "min_x":
+                            x = min(start_x, end_x)
+                        elif which_x == "max_x":
+                            x = max(start_x, end_x)
                         else:
                             raise ValueError("which_x is unknown: {}".format(which_x))
+                        x += x_inc
 
                         if which_y == "start_y":
-                            y = start_y + y_inc
+                            y = start_y
                         elif which_y == "end_y":
-                            y = end_y + y_inc
+                            y = end_y
+                        elif which_y == "min_y":
+                            y = min(start_y, end_y)
+                        elif which_y == "max_y":
+                            y = max(start_y, end_y)
                         else:
                             raise ValueError("which_y is unknown: {}".format(which_y))
+                        y += y_inc
 
                         coordinates.append(x)
                         coordinates.append(y)
