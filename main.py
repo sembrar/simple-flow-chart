@@ -1,3 +1,6 @@
+import argparse
+import os
+
 import tkinter
 from tkinter import ttk
 
@@ -7,7 +10,7 @@ from MyModules.Widgets.ScrolledWidgets.ScrolledText import ScrolledText
 
 class FlowChart(tkinter.Tk):
 
-    def __init__(self):
+    def __init__(self, commands_text_file_path=None):
         tkinter.Tk.__init__(self)
         self.title("FlowChart")
 
@@ -33,9 +36,25 @@ class FlowChart(tkinter.Tk):
         label_frame_for_text.rowconfigure(0, weight=1)
         label_frame_for_text.columnconfigure(0, weight=1)
 
+        if commands_text_file_path is not None:
+            try:
+                with open(commands_text_file_path) as f:
+                    self._text.insert("1.0", f.read())
+            except IOError:
+                pass
+
 
 def main():
-    FlowChart().mainloop()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", help="Flowchart commands text file", type=str)
+    args = parser.parse_args()
+
+    if args.f is not None:
+        if not os.path.isfile(args.f):
+            print("Couldn't find file:", args.f)
+            return
+
+    FlowChart(args.f).mainloop()
 
 
 if __name__ == '__main__':
