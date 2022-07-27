@@ -68,6 +68,9 @@ class FlowChart(tkinter.Tk):
             button_reset_text.state(["disabled"])
         button_reset_text.bind("<ButtonRelease-1>", self._reset_commands_text_to_original)
 
+        if self._commands_text_file_path is not None:
+            self._re_read_commands_from_text(None)
+
     def _re_read_commands_from_text(self, event=None):
         if event is not None:
             if not event.widget.instate(["!disabled", "hover"]):
