@@ -159,8 +159,8 @@ class FlowChart(tkinter.Tk):
             else:
                 box_text = command_data["text"]
 
-            _, _, x1, y1, x2, y2, tags = \
-                self._put_text_below_lowest_canvas_object_and_get_north_x_y_and_bbox_tags_as_seven_tuple(
+            text_id, x, y, x1, y1, x2, y2, tags = \
+                self._put_text_below_lowest_canvas_object_and_get_obj_id_north_x_y_and_bbox_tags_as_eight_tuple(
                     command_data["color"] if "color" in command_data else DEFAULT_COLOR_BOX_TEXT,
                     command_type, command_data["name"], box_text
                 )
@@ -219,9 +219,12 @@ class FlowChart(tkinter.Tk):
 
                 # self._canvas.create_rectangle(x1, y1, x2, y2, tags=tags)
 
-                self._canvas.create_polygon(
+                rhombus_id = self._canvas.create_polygon(
                     *point_north, *point_east, *point_south, *point_west,
                     fill='', outline=DEFAULT_COLOR_BOX_BOUNDARY, tags=tags)
+
+                self._canvas.move(text_id, 0, abs(point_north[1] - y))
+                self._canvas.move(rhombus_id, 0, abs(point_north[1] - y))
                 return
 
         except Exception as e:
@@ -239,7 +242,7 @@ class FlowChart(tkinter.Tk):
             x = int(self._canvas.cget("width")) / 2
         return x, y
 
-    def _put_text_below_lowest_canvas_object_and_get_north_x_y_and_bbox_tags_as_seven_tuple(
+    def _put_text_below_lowest_canvas_object_and_get_obj_id_north_x_y_and_bbox_tags_as_eight_tuple(
             self, color, box_type, box_name, box_text):
         x, y = self._get_x_middle_y_lower_from_lowest_canvas_object()
         y += PADDING_FOR_NEW_OBJECT
@@ -248,7 +251,7 @@ class FlowChart(tkinter.Tk):
         obj_id = \
             self._canvas.create_text(x, y, anchor="n", fill=color, tags=tags, text=box_text, justify=tkinter.CENTER)
         x1, y1, x2, y2 = self._canvas.bbox(obj_id)
-        return x, y, x1, y1, x2, y2, tags
+        return obj_id, x, y, x1, y1, x2, y2, tags
 
     def _run_all_remaining_commands(self, event):
         if not event.widget.instate(["!disabled", "hover"]):
