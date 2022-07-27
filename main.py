@@ -1,5 +1,6 @@
 import argparse
 import os
+import math
 
 import tkinter
 from tkinter import ttk
@@ -14,6 +15,7 @@ PADDING_FOR_NEW_OBJECT = 50
 PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT = 10
 DEFAULT_COLOR_BOX_TEXT = "black"
 DEFAULT_COLOR_BOX_BOUNDARY = "black"
+DEFAULT_DECISION_BOX_ACUTE_ANGLE = 80
 
 
 class FlowChart(tkinter.Tk):
@@ -137,6 +139,9 @@ class FlowChart(tkinter.Tk):
                 self._label_frame_for_canvas.configure(text=command_data["text"])
                 return
 
+            if command_type == "connection":
+                return
+
             allowed_command_types = ("start", "stop", "operation", "decision")
             if command_type not in allowed_command_types:
                 raise ValueError("CommandType {} not in allowed {}".format(command_type, allowed_command_types))
@@ -167,6 +172,48 @@ class FlowChart(tkinter.Tk):
                 return
 
             if command_type == "decision":
+                try:
+                    acute_angle = command_data["angle"]
+                except KeyError:
+                    acute_angle = DEFAULT_DECISION_BOX_ACUTE_ANGLE
+                obtuse_angle = 180 - acute_angle
+
+                x1 -= PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT
+                y1 -= PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT
+                x2 += PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT
+                y2 += PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT
+
+                dx = abs(x2 - x1)
+                dy = abs(y2 - y1)
+
+                # print("dx,dy:", dx, dy)
+
+                if dy < dx:
+                    angle_to_use_for_x_extremes = acute_angle
+                    angle_to_use_for_y_extremes = obtuse_angle
+                else:
+                    angle_to_use_for_x_extremes = obtuse_angle
+                    angle_to_use_for_y_extremes = acute_angle
+
+                # print("Angles:x,y:", angle_to_use_for_x_extremes, angle_to_use_for_y_extremes)
+
+                dx_for_rhombus = int(math.ceil((dy / 2) / abs(math.tan(math.radians(angle_to_use_for_x_extremes)))))
+                dy_for_rhombus = int(math.ceil((dx / 2) / abs(math.tan(math.radians(angle_to_use_for_y_extremes)))))
+
+                # print("deltas for rhombus:x,y:", dx_for_rhombus, dy_for_rhombus)
+
+                point_east = x1 - dx_for_rhombus, y1 + int(dy / 2)
+                point_west = x2 + dx_for_rhombus, y1 + int(dy / 2)
+                point_north = x1 + int(dx / 2), y1 - dy_for_rhombus
+                point_south = x1 + int(dx / 2), y2 + dy_for_rhombus
+
+                # print("NESW:", point_north, point_east, point_south, point_west)
+
+                # self._canvas.create_rectangle(x1, y1, x2, y2, tags=tags)
+
+                self._canvas.create_polygon(
+                    *point_north, *point_east, *point_south, *point_west,
+                    fill='', outline=DEFAULT_COLOR_BOX_BOUNDARY, tags=tags)
                 return
 
         except Exception as e:
