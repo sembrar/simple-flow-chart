@@ -168,8 +168,37 @@ class FlowChart(tkinter.Tk):
                 start_point = self._get_point_from_bbox_and_corner(start_box_bbox, start_box_connection_corner)
                 end_point = self._get_point_from_bbox_and_corner(end_box_bbox, end_box_connection_corner)
 
+                coordinates = []
+                coordinates.extend(start_point)
+                try:
+                    intermediate_points_data = command_data["points"]
+                    start_x, start_y = start_point
+                    end_x, end_y = end_point
+                    for ((which_x, x_inc), (which_y, y_inc)) in intermediate_points_data:
+
+                        if which_x == "start_x":
+                            x = start_x + x_inc
+                        elif which_x == "end_x":
+                            x = end_x + x_inc
+                        else:
+                            raise ValueError("which_x is unknown: {}".format(which_x))
+
+                        if which_y == "start_y":
+                            y = start_y + y_inc
+                        elif which_y == "end_y":
+                            y = end_y + y_inc
+                        else:
+                            raise ValueError("which_y is unknown: {}".format(which_y))
+
+                        coordinates.append(x)
+                        coordinates.append(y)
+
+                except KeyError:
+                    pass
+                coordinates.extend(end_point)
+
                 tags = ("canvas-obj", "connection")
-                self._canvas.create_line(*start_point, *end_point, arrow=tkinter.LAST, tags=tags)
+                self._canvas.create_line(*coordinates, arrow=tkinter.LAST, tags=tags)
                 return
 
             allowed_command_types = ("start", "stop", "operation", "decision")
