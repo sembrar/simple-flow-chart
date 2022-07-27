@@ -161,6 +161,14 @@ class FlowChart(tkinter.Tk):
                     tags=tags)
                 return
 
+            if command_type == "decision":
+                _, _, x1, y1, x2, y2, tags = \
+                    self._put_text_below_lowest_canvas_object_and_get_north_x_y_and_bbox_tags_as_seven_tuple(
+                        command_data["color"] if "color" in command_data else DEFAULT_COLOR_BOX_TEXT,
+                        command_type, command_data["name"], command_data["text"]
+                    )
+                return
+
         except Exception as e:
             messagebox.showerror("Error occurred", "Please see command prompt window for details")
             raise e
@@ -183,7 +191,7 @@ class FlowChart(tkinter.Tk):
 
         tags = (box_type, box_name)
         obj_id = \
-            self._canvas.create_text(x, y, anchor="n", fill=color, tags=tags, text=box_text)
+            self._canvas.create_text(x, y, anchor="n", fill=color, tags=tags, text=box_text, justify=tkinter.CENTER)
         x1, y1, x2, y2 = self._canvas.bbox(obj_id)
         return x, y, x1, y1, x2, y2, tags
 
