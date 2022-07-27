@@ -155,6 +155,20 @@ class FlowChart(tkinter.Tk):
                 return
 
             if command_type == "connection":
+                start_box_name, start_box_connection_corner = command_data["start"]
+                end_box_name, end_box_connection_corner = command_data["end"]
+
+                start_box_id = self._canvas.find_withtag("flow-chart-box-" + start_box_name)[0]
+                end_box_id = self._canvas.find_withtag("flow-chart-box-" + end_box_name)[0]
+
+                start_box_bbox = self._canvas.bbox(start_box_id)
+                end_box_bbox = self._canvas.bbox(end_box_id)
+
+                start_point = self._get_point_from_bbox_and_corner(start_box_bbox, start_box_connection_corner)
+                end_point = self._get_point_from_bbox_and_corner(end_box_bbox, end_box_connection_corner)
+
+                tags = ("canvas-obj", "connection")
+                self._canvas.create_line(*start_point, *end_point, arrow=tkinter.LAST, tags=tags)
                 return
 
             allowed_command_types = ("start", "stop", "operation", "decision")
@@ -171,6 +185,8 @@ class FlowChart(tkinter.Tk):
                     command_data["color"] if "color" in command_data else DEFAULT_COLOR_BOX_TEXT,
                     command_type, command_data["name"], box_text
                 )
+
+            tags = tuple(list(tags) + ["flow-chart-box-" + command_data["name"]])
 
             if command_type == "start" or command_type == "stop":
                 self._canvas.create_oval(
@@ -254,7 +270,7 @@ class FlowChart(tkinter.Tk):
         x, y = self._get_x_middle_y_lower_from_lowest_canvas_object()
         y += PADDING_FOR_NEW_OBJECT
 
-        tags = (box_type, "name:" + box_name)
+        tags = ("canvas-obj", box_type, "name:" + box_name)
         obj_id = \
             self._canvas.create_text(x, y, anchor="n", fill=color, tags=tags, text=box_text, justify=tkinter.CENTER)
         x1, y1, x2, y2 = self._canvas.bbox(obj_id)
@@ -301,6 +317,19 @@ class FlowChart(tkinter.Tk):
         self._canvas.move(self._box_name_tag_being_moved, dx, dy)
         self._moving_old_x = event.x
         self._moving_old_y = event.y
+
+    @staticmethod
+    def _get_point_from_bbox_and_corner(bbox, corner):
+        x1, y1, x2, y2 = bbox
+        if corner == "north":
+            return int((x1 + x2) / 2), y1
+        if corner == "south":
+            return int((x1 + x2) / 2), y2
+        if corner == "west":
+            return x1, int((y1 + y2) / 2)
+        if corner == "east":
+            return x2, int((y1 + y2) / 2)
+        raise ValueError("corner {} is unknown".format(corner))
 
 
 def main():
