@@ -428,7 +428,10 @@ class FlowChart(tkinter.Tk):
                     # print("Found command:", self._commands[i])
                     self._commands[i]["dx"] = self._moving_total_dx
                     self._commands[i]["dy"] = self._moving_total_dy
-                    self._write_commands_to_text()  # todo, just writing the single command is enough
+                    self._text.delete("{}.0".format(i + 1), "{}.0 lineend".format(i + 1))
+                    self._text.insert("{}.0".format(i + 1),
+                                      "{}{}".format(json.dumps(self._commands[i], sort_keys=True),
+                                                    "," if len(self._commands) - i > 1 else ""))
                     break
             except KeyError:
                 pass
