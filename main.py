@@ -467,10 +467,7 @@ class FlowChart(tkinter.Tk):
                     # print("Found command:", self._commands[i])
                     self._commands[i]["dx"] = self._moving_total_dx
                     self._commands[i]["dy"] = self._moving_total_dy
-                    self._text.delete("{}.0".format(i + 1), "{}.0 lineend".format(i + 1))
-                    self._text.insert("{}.0".format(i + 1),
-                                      "{}{}".format(json.dumps(self._commands[i], sort_keys=True),
-                                                    "," if len(self._commands) - i > 1 else ""))
+                    self._write_commands_to_text(i)
                     break
             except KeyError:
                 pass
@@ -522,9 +519,16 @@ class FlowChart(tkinter.Tk):
 
         self._canvas.configure(scrollregion=scroll_region)
 
-    def _write_commands_to_text(self):
-        self._text.delete("1.0", tkinter.END)
+    def _write_commands_to_text(self, command_index=None):
+        if command_index is None:
+            self._text.delete("1.0", tkinter.END)
+        else:
+            self._text.delete("{}.0".format(command_index + 1), "{}.0 lineend".format(command_index + 1))
+
         for i in range(len(self._commands)):
+            if command_index is not None and i != command_index:
+                continue
+
             commands_ordered_dict = OrderedDict()
             if "type" in self._commands[i]:
                 commands_ordered_dict["type"] = self._commands[i]["type"]
@@ -536,8 +540,12 @@ class FlowChart(tkinter.Tk):
                 commands_ordered_dict[key] = self._commands[i][key]
             self._text.insert(
                 "{}.0".format(i + 1),
-                "{}{}\n".format(json.dumps(commands_ordered_dict),
-                                "," if len(self._commands) - i > 1 else ""))
+                "{}{}{}".format(json.dumps(commands_ordered_dict),
+                                "," if len(self._commands) - i > 1 else "",
+                                "\n" if command_index is None else ""))
+
+            if command_index is not None and i == command_index:
+                break
 
 
 def main():
