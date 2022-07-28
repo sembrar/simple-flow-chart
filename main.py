@@ -21,6 +21,7 @@ DEFAULT_DECISION_BOX_ACUTE_ANGLE = 60
 FONT_DEFAULT_SIZE = 0
 FONT_DEFAULT_WEIGHT = "normal"
 DEFAULT_CONNECTOR_WIDTH = 1
+DEFAULT_BOX_OUTLINE_WIDTH = 1
 
 
 class FlowChart(tkinter.Tk):
@@ -111,6 +112,7 @@ class FlowChart(tkinter.Tk):
         # print(self._font.cget("size"))  # it is 0 by default, if needed font of n pixels height, use -n
         # print(self._font.cget("weight"))  # it is by default "normal", can give "bold"
         self._connector_width = DEFAULT_CONNECTOR_WIDTH
+        self._box_outline_width = DEFAULT_BOX_OUTLINE_WIDTH
 
     def _re_read_commands_from_text(self, event=None):
         if event is not None:
@@ -198,6 +200,13 @@ class FlowChart(tkinter.Tk):
                     self._connector_width = command_data["width"]
                 except KeyError:
                     self._connector_width = DEFAULT_CONNECTOR_WIDTH
+                return
+
+            if command_type == "box":
+                try:
+                    self._box_outline_width = command_data["width"]
+                except KeyError:
+                    self._box_outline_width = DEFAULT_BOX_OUTLINE_WIDTH
                 return
 
             if command_type == "connection":
@@ -291,13 +300,13 @@ class FlowChart(tkinter.Tk):
                 self._canvas.create_oval(
                     x1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
                     x2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
-                    tags=tags)
+                    tags=tags, width=self._box_outline_width)
 
             elif command_type == "operation":
                 self._canvas.create_rectangle(
                     x1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
                     x2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
-                    tags=tags)
+                    tags=tags, width=self._box_outline_width)
 
             elif command_type == "decision":
                 try:
@@ -341,7 +350,7 @@ class FlowChart(tkinter.Tk):
 
                 self._canvas.create_polygon(
                     *point_north, *point_east, *point_south, *point_west,
-                    fill='', outline=DEFAULT_COLOR_BOX_BOUNDARY, tags=tags)
+                    fill='', outline=DEFAULT_COLOR_BOX_BOUNDARY, tags=tags, width=self._box_outline_width)
 
                 self._canvas.move("name:" + command_data["name"], 0, abs(point_north[1] - y))
 
