@@ -161,6 +161,14 @@ class FlowChart(tkinter.Tk):
                 self._label_frame_for_canvas.configure(text=command_data["text"])
                 return
 
+            if command_type == "delete":
+                self._canvas.delete("name:{}".format(command_data["name"]))
+                return
+
+            if command_type == "delete-all":
+                self._canvas.delete("canvas-obj")
+                return
+
             if command_type == "connection":
                 start_box_name, start_box_connection_corner = command_data["start"]
                 end_box_name, end_box_connection_corner = command_data["end"]
