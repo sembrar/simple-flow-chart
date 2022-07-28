@@ -68,6 +68,7 @@ class FlowChart(tkinter.Tk):
                 pass
 
         self._commands = []
+        self._cur_command_index = 0
 
         buttons_frame = ttk.Frame(label_frame_for_text)
         buttons_frame.grid(row=1, column=0, sticky='ew')
@@ -93,6 +94,7 @@ class FlowChart(tkinter.Tk):
         # bind left-click-hold-and-drag to move flow chart boxes
         self._box_name_tag_being_moved = None
         self._moving_old_x, self._moving_old_y = 0, 0
+        self._moving_total_dx, self._moving_total_dy = 0, 0
         self._canvas.bind("<Button-1>", self._left_button_click_on_canvas)
         self._canvas.bind("<Motion>", self._mouse_move_on_canvas)
         self._canvas.bind("<ButtonRelease-1>", self._left_button_release_on_canvas)
@@ -107,13 +109,13 @@ class FlowChart(tkinter.Tk):
 
         try:
             self._commands = json.loads(self._text.get("1.0", tkinter.END))
-            self._commands.reverse()
             self._canvas.delete("canvas-obj")
             if event is not None:
                 messagebox.showinfo("Success", "{} commands read".format(len(self._commands)))
         except json.JSONDecodeError:
             messagebox.showerror("Bad JSON", "Commands text JSON couldn't be decoded")
             self._commands = []
+        self._cur_command_index = 0
 
     def _reset_commands_text_to_original(self, event):
         if not event.widget.instate(["!disabled", "hover"]):
@@ -145,8 +147,10 @@ class FlowChart(tkinter.Tk):
 
         try:
             try:
-                command_data = self._commands.pop()
+                command_data = self._commands[self._cur_command_index]
+                self._cur_command_index += 1
             except IndexError:
+                print("No more commands")
                 return
 
             command_type = command_data["type"]
@@ -340,7 +344,7 @@ class FlowChart(tkinter.Tk):
         if not event.widget.instate(["!disabled", "hover"]):
             return
 
-        while len(self._commands) > 0:
+        while self._cur_command_index < len(self._commands):
             self._run_a_command()
 
     def _left_button_click_on_canvas(self, event):
@@ -361,12 +365,38 @@ class FlowChart(tkinter.Tk):
                 self._box_name_tag_being_moved = tag
                 self._moving_old_x = event.x
                 self._moving_old_y = event.y
+
+                self._moving_total_dx = 0
+                self._moving_total_dy = 0
+                for i in range(len(self._commands)):  # get any existing dx and dy
+                    try:
+                        if self._commands[i]["name"] == self._box_name_tag_being_moved[5:]:  # [5: as name: added in tag
+                            self._moving_total_dx = self._commands[i]["dx"]
+                            self._moving_total_dy = self._commands[i]["dy"]
+                            break
+                    except KeyError:
+                        pass
+
                 break
 
         # print("Closest:", closest_obj, "Tags:", tags_closest_obj)
 
     def _left_button_release_on_canvas(self, _):
         # print("Left button release on canvas")
+        if self._box_name_tag_being_moved is None:
+            return
+
+        for i in range(len(self._commands)):
+            try:
+                if self._commands[i]["name"] == self._box_name_tag_being_moved[5:]:  # [5:] as "name:" is added in tag
+                    # print("Found command:", self._commands[i])
+                    self._commands[i]["dx"] = self._moving_total_dx
+                    self._commands[i]["dy"] = self._moving_total_dy
+                    self._write_commands_to_text()  # todo, just writing the single command is enough
+                    break
+            except KeyError:
+                pass
+
         self._box_name_tag_being_moved = None
 
     def _mouse_move_on_canvas(self, event):
@@ -377,6 +407,8 @@ class FlowChart(tkinter.Tk):
         self._canvas.move(self._box_name_tag_being_moved, dx, dy)
         self._moving_old_x = event.x
         self._moving_old_y = event.y
+        self._moving_total_dx += dx
+        self._moving_total_dy += dy
 
     @staticmethod
     def _get_point_from_bbox_and_corner(bbox, corner):
@@ -411,6 +443,11 @@ class FlowChart(tkinter.Tk):
             x_max + PADDING_FOR_NEW_OBJECT, y_max + PADDING_FOR_NEW_OBJECT)
 
         self._canvas.configure(scrollregion=scroll_region)
+
+    def _write_commands_to_text(self):
+        self._text.delete("1.0", tkinter.END)
+        for i in range(len(self._commands)):
+            self._text.insert("{}.0".format(i), "{}\n".format(json.dumps(self._commands[i], sort_keys=True)))
 
 
 def main():
