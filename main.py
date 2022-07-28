@@ -135,7 +135,9 @@ class FlowChart(tkinter.Tk):
                 )
                 if save_result:
                     with open(self._commands_text_file_path, 'w') as f:
-                        f.write(text)
+                        f.write("[\n")
+                        f.write(text.strip())
+                        f.write("\n]\n")
                     print("Commands overwritten to", self._commands_text_file_path)
                 else:
                     print("Changed discarded")
