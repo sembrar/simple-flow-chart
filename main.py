@@ -22,6 +22,7 @@ FONT_DEFAULT_SIZE = 0
 FONT_DEFAULT_WEIGHT = "normal"
 DEFAULT_CONNECTOR_WIDTH = 1
 DEFAULT_BOX_OUTLINE_WIDTH = 1
+COLOR_EXECUTED_COMMAND_IN_TEXT = "green"
 
 
 class FlowChart(tkinter.Tk):
@@ -114,6 +115,8 @@ class FlowChart(tkinter.Tk):
         self._connector_width = DEFAULT_CONNECTOR_WIDTH
         self._box_outline_width = DEFAULT_BOX_OUTLINE_WIDTH
 
+        self._text.tag_config("command-executed", foreground=COLOR_EXECUTED_COMMAND_IN_TEXT)
+
     def _re_read_commands_from_text(self, event=None):
         if event is not None:
             if not event.widget.instate(["!disabled", "hover"]):
@@ -122,6 +125,7 @@ class FlowChart(tkinter.Tk):
         try:
             self._commands = json.loads("[" + self._text.get("1.0", tkinter.END) + "]")
             self._canvas.delete("canvas-obj")
+            self._text.tag_remove("command-executed", "1.0", tkinter.END)
             if event is not None:
                 messagebox.showinfo("Success", "{} commands read".format(len(self._commands)))
         except json.JSONDecodeError:
@@ -132,6 +136,7 @@ class FlowChart(tkinter.Tk):
     def _reset_commands_text_to_original(self, event):
         if not event.widget.instate(["!disabled", "hover"]):
             return
+        self._text.tag_remove("command-executed", "1.0", tkinter.END)
         self._text.delete("1.0", tkinter.END)
         self._text.insert("1.0", self._original_text)
         self._re_read_commands_from_text()
@@ -168,6 +173,11 @@ class FlowChart(tkinter.Tk):
                 return
 
             command_type = command_data["type"]
+
+            self._text.tag_add(
+                "command-executed",
+                "{}.0".format(self._cur_command_index), "{}.0 lineend".format(self._cur_command_index)
+            )  # text line-indices start at 1, but, _cur_command_index is used directly because it's already incremented
 
             if command_type == "title":
                 self._label_frame_for_canvas.configure(text=command_data["text"])
