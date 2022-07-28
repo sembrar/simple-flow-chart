@@ -351,13 +351,17 @@ class FlowChart(tkinter.Tk):
 
     def _get_x_middle_y_lower_from_lowest_canvas_object(self):
         x = None
-        y = 0
+        y = -1
         object_ids = self._canvas.find_all()
         for obj_id in object_ids:
             x1, y1, x2, y2 = self._canvas.bbox(obj_id)
-            y = max(y, y1, y2)
+            if y < y2:
+                y = y2
+                x = int((x1 + x2) / 2)
         if x is None:
-            x = int(self._canvas.cget("width")) / 2
+            width = int(self._canvas.winfo_geometry().split("x")[0])
+            return int(width / 2), 0
+
         return x, y
 
     def _put_text_below_lowest_canvas_object_and_get_obj_id_north_x_y_and_bbox_tags_as_eight_tuple(
