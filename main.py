@@ -5,6 +5,7 @@ import math
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import font
 
 from MyModules.Widgets.ScrolledWidgets.ScrolledText import ScrolledText
 
@@ -16,6 +17,9 @@ PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT = 10
 DEFAULT_COLOR_BOX_TEXT = "black"
 DEFAULT_COLOR_BOX_BOUNDARY = "black"
 DEFAULT_DECISION_BOX_ACUTE_ANGLE = 60
+
+FONT_DEFAULT_SIZE = 0
+FONT_DEFAULT_WEIGHT = "normal"
 
 
 class FlowChart(tkinter.Tk):
@@ -102,6 +106,10 @@ class FlowChart(tkinter.Tk):
         self._canvas.bind("<Motion>", self._mouse_move_on_canvas)
         self._canvas.bind("<ButtonRelease-1>", self._left_button_release_on_canvas)
 
+        self._font = font.Font()
+        # print(self._font.cget("size"))  # it is 0 by default, if needed font of n pixels height, use -n
+        # print(self._font.cget("weight"))  # it is by default "normal", can give "bold"
+
     def _re_read_commands_from_text(self, event=None):
         if event is not None:
             if not event.widget.instate(["!disabled", "hover"]):
@@ -169,6 +177,20 @@ class FlowChart(tkinter.Tk):
                 self._canvas.delete("canvas-obj")
                 return
 
+            if command_type == "font":
+                try:
+                    font_size = -command_data["size"]
+                except KeyError:
+                    font_size = FONT_DEFAULT_SIZE
+
+                try:
+                    font_weight = command_data["weight"]
+                except KeyError:
+                    font_weight = FONT_DEFAULT_WEIGHT
+
+                self._font.configure(size=font_size, weight=font_weight)
+                return
+
             if command_type == "connection":
                 start_box_name, start_box_connection_corner = command_data["start"]
                 end_box_name, end_box_connection_corner = command_data["end"]
@@ -234,7 +256,7 @@ class FlowChart(tkinter.Tk):
                         label_color = command_data["label-color"]
                     except KeyError:
                         label_color = DEFAULT_COLOR_BOX_TEXT
-                    self._canvas.create_text(*start_point, text=label, fill=label_color, tags=tags)
+                    self._canvas.create_text(*start_point, text=label, fill=label_color, tags=tags, font=self._font)
                 except KeyError:
                     pass
                 return
@@ -345,7 +367,8 @@ class FlowChart(tkinter.Tk):
 
         tags = ("canvas-obj", box_type, "name:" + box_name)
         obj_id = \
-            self._canvas.create_text(x, y, anchor="n", fill=color, tags=tags, text=box_text, justify=tkinter.CENTER)
+            self._canvas.create_text(x, y, anchor="n", fill=color, tags=tags, text=box_text, justify=tkinter.CENTER,
+                                     font=self._font)
         x1, y1, x2, y2 = self._canvas.bbox(obj_id)
         return obj_id, x, y, x1, y1, x2, y2, tags
 
