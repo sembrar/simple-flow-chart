@@ -284,7 +284,17 @@ class FlowChart(tkinter.Tk):
                         label_color = command_data["label-color"]
                     except KeyError:
                         label_color = DEFAULT_COLOR_BOX_TEXT
-                    self._canvas.create_text(*start_point, text=label, fill=label_color, tags=tags, font=self._font)
+                    try:
+                        label_dx = command_data["label-dx"]
+                    except KeyError:
+                        label_dx = 0
+                    try:
+                        label_dy = command_data["label-dy"]
+                    except KeyError:
+                        label_dy = 0
+                    label_x = start_point[0] + label_dx
+                    label_y = start_point[1] + label_dy
+                    self._canvas.create_text(label_x, label_y, text=label, fill=label_color, tags=tags, font=self._font)
                 except KeyError:
                     pass
                 return
