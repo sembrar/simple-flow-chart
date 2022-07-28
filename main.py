@@ -20,6 +20,7 @@ DEFAULT_DECISION_BOX_ACUTE_ANGLE = 60
 
 FONT_DEFAULT_SIZE = 0
 FONT_DEFAULT_WEIGHT = "normal"
+DEFAULT_CONNECTOR_WIDTH = 1
 
 
 class FlowChart(tkinter.Tk):
@@ -109,6 +110,7 @@ class FlowChart(tkinter.Tk):
         self._font = font.Font()
         # print(self._font.cget("size"))  # it is 0 by default, if needed font of n pixels height, use -n
         # print(self._font.cget("weight"))  # it is by default "normal", can give "bold"
+        self._connector_width = DEFAULT_CONNECTOR_WIDTH
 
     def _re_read_commands_from_text(self, event=None):
         if event is not None:
@@ -191,6 +193,13 @@ class FlowChart(tkinter.Tk):
                 self._font.configure(size=font_size, weight=font_weight)
                 return
 
+            if command_type == "connector":
+                try:
+                    self._connector_width = command_data["width"]
+                except KeyError:
+                    self._connector_width = DEFAULT_CONNECTOR_WIDTH
+                return
+
             if command_type == "connection":
                 start_box_name, start_box_connection_corner = command_data["start"]
                 end_box_name, end_box_connection_corner = command_data["end"]
@@ -248,7 +257,7 @@ class FlowChart(tkinter.Tk):
                     # sometimes, connections may be named to delete them later
                 except KeyError:
                     tags = ("canvas-obj", "connection")
-                self._canvas.create_line(*coordinates, arrow=tkinter.LAST, tags=tags)
+                self._canvas.create_line(*coordinates, arrow=tkinter.LAST, tags=tags, width=self._connector_width)
 
                 try:
                     label = command_data["label"]
