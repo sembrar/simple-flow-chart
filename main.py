@@ -58,17 +58,20 @@ class FlowChart(tkinter.Tk):
         label_frame_for_text.rowconfigure(0, weight=1)
         label_frame_for_text.columnconfigure(0, weight=1)
 
+        self._commands = []
+        self._cur_command_index = 0
+
         self._original_text = None
         if commands_text_file_path is not None:
             try:
                 with open(commands_text_file_path) as f:
-                    self._original_text = f.read()
-                    self._text.insert("1.0", self._original_text)
+                    self._commands = json.load(f)
+                    self._write_commands_to_text()
+                    self._original_text = self._text.get("1.0", tkinter.END)
             except IOError:
                 pass
-
-        self._commands = []
-        self._cur_command_index = 0
+            except json.JSONDecodeError:
+                pass
 
         buttons_frame = ttk.Frame(label_frame_for_text)
         buttons_frame.grid(row=1, column=0, sticky='ew')
@@ -99,16 +102,13 @@ class FlowChart(tkinter.Tk):
         self._canvas.bind("<Motion>", self._mouse_move_on_canvas)
         self._canvas.bind("<ButtonRelease-1>", self._left_button_release_on_canvas)
 
-        if self._commands_text_file_path is not None:
-            self._re_read_commands_from_text(None)
-
     def _re_read_commands_from_text(self, event=None):
         if event is not None:
             if not event.widget.instate(["!disabled", "hover"]):
                 return
 
         try:
-            self._commands = json.loads(self._text.get("1.0", tkinter.END))
+            self._commands = json.loads("[" + self._text.get("1.0", tkinter.END) + "]")
             self._canvas.delete("canvas-obj")
             if event is not None:
                 messagebox.showinfo("Success", "{} commands read".format(len(self._commands)))
