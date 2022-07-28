@@ -330,7 +330,7 @@ class FlowChart(tkinter.Tk):
 
                 # self._canvas.create_rectangle(x1, y1, x2, y2, tags=tags)
 
-                rhombus_id = self._canvas.create_polygon(
+                self._canvas.create_polygon(
                     *point_north, *point_east, *point_south, *point_west,
                     fill='', outline=DEFAULT_COLOR_BOX_BOUNDARY, tags=tags)
 
