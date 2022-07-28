@@ -213,7 +213,11 @@ class FlowChart(tkinter.Tk):
                     pass
                 coordinates.extend(end_point)
 
-                tags = ("canvas-obj", "connection")
+                try:
+                    tags = ("canvas-obj", "connection", "name:{}".format(command_data["name"]))
+                    # sometimes, connections may be named to delete them later
+                except KeyError:
+                    tags = ("canvas-obj", "connection")
                 self._canvas.create_line(*coordinates, arrow=tkinter.LAST, tags=tags)
 
                 try:
@@ -222,7 +226,7 @@ class FlowChart(tkinter.Tk):
                         label_color = command_data["label-color"]
                     except KeyError:
                         label_color = DEFAULT_COLOR_BOX_TEXT
-                    self._canvas.create_text(*start_point, text=label, fill=label_color)
+                    self._canvas.create_text(*start_point, text=label, fill=label_color, tags=tags)
                 except KeyError:
                     pass
                 return
