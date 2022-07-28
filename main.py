@@ -215,6 +215,16 @@ class FlowChart(tkinter.Tk):
 
                 tags = ("canvas-obj", "connection")
                 self._canvas.create_line(*coordinates, arrow=tkinter.LAST, tags=tags)
+
+                try:
+                    label = command_data["label"]
+                    try:
+                        label_color = command_data["label-color"]
+                    except KeyError:
+                        label_color = DEFAULT_COLOR_BOX_TEXT
+                    self._canvas.create_text(*start_point, text=label, fill=label_color)
+                except KeyError:
+                    pass
                 return
 
             allowed_command_types = ("start", "stop", "operation", "decision")
@@ -289,24 +299,6 @@ class FlowChart(tkinter.Tk):
                 rhombus_id = self._canvas.create_polygon(
                     *point_north, *point_east, *point_south, *point_west,
                     fill='', outline=DEFAULT_COLOR_BOX_BOUNDARY, tags=tags)
-
-                for decision in ("yes", "no"):
-                    try:
-                        corner = command_data[decision]
-                        if corner == "north":
-                            point = point_north
-                        elif corner == "south":
-                            point = point_south
-                        elif corner == "east":
-                            point = point_east
-                        elif corner == "west":
-                            point = point_west
-                        else:
-                            raise ValueError("decision box yes unknown corner {}".format(corner))
-                        self._canvas.create_text(*point, text=decision.title(), tags=tags,
-                                                 fill={"yes": "green", "no": "blue"}[decision])
-                    except KeyError:
-                        pass
 
                 self._canvas.move("name:" + command_data["name"], 0, abs(point_north[1] - y))
 
