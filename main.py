@@ -386,7 +386,7 @@ class FlowChart(tkinter.Tk):
     def _left_button_click_on_canvas(self, event):
         # print("Left button click release on canvas")
         try:
-            closest_obj = self._canvas.find_closest(event.x, event.y)[0]
+            closest_obj = self._canvas.find_closest(self._canvas.canvasx(event.x), self._canvas.canvasy(event.y))[0]
         except IndexError:
             # print("No closest object found")
             return
