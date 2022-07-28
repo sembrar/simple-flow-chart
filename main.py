@@ -237,16 +237,14 @@ class FlowChart(tkinter.Tk):
                     x1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
                     x2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
                     tags=tags)
-                return
 
-            if command_type == "operation":
+            elif command_type == "operation":
                 self._canvas.create_rectangle(
                     x1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y1 - PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
                     x2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT, y2 + PADDING_BETWEEN_BOX_BOUNDARY_AND_TEXT,
                     tags=tags)
-                return
 
-            if command_type == "decision":
+            elif command_type == "decision":
                 try:
                     acute_angle = command_data["angle"]
                 except KeyError:
@@ -309,7 +307,12 @@ class FlowChart(tkinter.Tk):
                         pass
 
                 self._canvas.move("name:" + command_data["name"], 0, abs(point_north[1] - y))
-                return
+
+            try:
+                dx_pos, dy_pos = command_data["dx"], command_data["dy"]
+                self._canvas.move("name:" + command_data["name"], dx_pos, dy_pos)
+            except KeyError:
+                pass
 
         except Exception as e:
             messagebox.showerror("Error occurred", "Please see command prompt window for details")
@@ -447,7 +450,10 @@ class FlowChart(tkinter.Tk):
     def _write_commands_to_text(self):
         self._text.delete("1.0", tkinter.END)
         for i in range(len(self._commands)):
-            self._text.insert("{}.0".format(i), "{}\n".format(json.dumps(self._commands[i], sort_keys=True)))
+            self._text.insert(
+                "{}.0".format(i + 1),
+                "{}{}\n".format(json.dumps(self._commands[i], sort_keys=True),
+                                "," if len(self._commands) - i > 1 else ""))
 
 
 def main():
