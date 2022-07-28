@@ -10,6 +10,7 @@ from tkinter import font
 from MyModules.Widgets.ScrolledWidgets.ScrolledText import ScrolledText
 
 import json
+from collections import OrderedDict
 
 
 PADDING_FOR_NEW_OBJECT = 50
@@ -524,9 +525,18 @@ class FlowChart(tkinter.Tk):
     def _write_commands_to_text(self):
         self._text.delete("1.0", tkinter.END)
         for i in range(len(self._commands)):
+            commands_ordered_dict = OrderedDict()
+            if "type" in self._commands[i]:
+                commands_ordered_dict["type"] = self._commands[i]["type"]
+            if "name" in self._commands[i]:
+                commands_ordered_dict["name"] = self._commands[i]["name"]
+            for key in sorted(self._commands[i].keys()):
+                if key == "type" or key == "name":
+                    continue
+                commands_ordered_dict[key] = self._commands[i][key]
             self._text.insert(
                 "{}.0".format(i + 1),
-                "{}{}\n".format(json.dumps(self._commands[i], sort_keys=True),
+                "{}{}\n".format(json.dumps(commands_ordered_dict),
                                 "," if len(self._commands) - i > 1 else ""))
 
 
