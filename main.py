@@ -520,6 +520,13 @@ class FlowChart(tkinter.Tk):
         self._canvas.configure(scrollregion=scroll_region)
 
     def _write_commands_to_text(self, command_index=None):
+
+        keys_that_appear_in_commands = (
+            "type", "name", "text", "angle", "dx", "dy", "start", "end", "points", "color", "width",
+            "label", "label-dx", "label-dy", "label-color", "size", "weight",
+        )
+        their_indices = dict(zip(keys_that_appear_in_commands, range(len(keys_that_appear_in_commands))))
+
         if command_index is None:
             self._text.delete("1.0", tkinter.END)
         else:
@@ -529,15 +536,16 @@ class FlowChart(tkinter.Tk):
             if command_index is not None and i != command_index:
                 continue
 
+            sorted_keys = sorted(self._commands[i].keys())
+            # sorted by alphabetic order
+
+            sorted_keys.sort(key=lambda x: their_indices.get(x, len(keys_that_appear_in_commands)))
+            # stable sorted by index in their_indices else keep the alphabetic order
+
             commands_ordered_dict = OrderedDict()
-            if "type" in self._commands[i]:
-                commands_ordered_dict["type"] = self._commands[i]["type"]
-            if "name" in self._commands[i]:
-                commands_ordered_dict["name"] = self._commands[i]["name"]
-            for key in sorted(self._commands[i].keys()):
-                if key == "type" or key == "name":
-                    continue
+            for key in sorted_keys:
                 commands_ordered_dict[key] = self._commands[i][key]
+
             self._text.insert(
                 "{}.0".format(i + 1),
                 "{}{}{}".format(json.dumps(commands_ordered_dict),
