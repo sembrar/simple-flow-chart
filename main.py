@@ -86,11 +86,11 @@ class FlowChart(tkinter.Tk):
 
         button_run_a_flow_chart_command = ttk.Button(buttons_frame, text="Run next command")
         button_run_a_flow_chart_command.grid(row=0, column=0, sticky='w')
-        button_run_a_flow_chart_command.bind("<ButtonRelease-1>", self._run_a_command)
+        button_run_a_flow_chart_command.bind("<ButtonRelease-1>", self._clicked_run_a_command)
 
         button_run_all_commands = ttk.Button(buttons_frame, text="Run all commands")
         button_run_all_commands.grid(row=1, column=0, sticky='w')
-        button_run_all_commands.bind("<ButtonRelease-1>", self._run_all_remaining_commands)
+        button_run_all_commands.bind("<ButtonRelease-1>", self._clicked_run_all_remaining_commands)
 
         button_send_commands_to_canvas = ttk.Button(buttons_frame, text="Send commands json to canvas")
         button_send_commands_to_canvas.grid(row=2, column=0, sticky='w')
@@ -161,9 +161,7 @@ class FlowChart(tkinter.Tk):
                     print("Changed discarded")
         tkinter.Tk.destroy(self)
 
-    def _run_a_command(self, event=None):
-        if event is not None and not event.widget.instate(["!disabled", "hover"]):
-            return
+    def _run_a_command(self):
 
         try:
             try:
@@ -415,7 +413,15 @@ class FlowChart(tkinter.Tk):
         x1, y1, x2, y2 = self._canvas.bbox(obj_id)
         return obj_id, x, y, x1, y1, x2, y2, tags
 
-    def _run_all_remaining_commands(self, event):
+    def _clicked_run_a_command(self, event=None):
+        if not event.widget.instate(["!disabled", "hover"]):
+            return
+        self._run_a_command()
+        while self._cur_command_index < len(self._commands) and self._commands[self._cur_command_index].get(
+                "autostart", False):
+            self._run_a_command()
+
+    def _clicked_run_all_remaining_commands(self, event):
         if not event.widget.instate(["!disabled", "hover"]):
             return
 
