@@ -386,24 +386,76 @@ class FlowChart(tkinter.Tk):
         finally:
             self._set_canvas_scroll_region()
 
-    def _get_x_middle_y_lower_from_lowest_canvas_object(self):
+    def _get_boundary_point(self, tag=None, direction="south"):
+        """
+        :param tag: if tag is None, all objects on canvas will be considered
+        :param direction: one of "north", "east", "south", "west"
+        :return: x, y of boundary point in the given direction
+        """
+
         x = None
-        y = -1
-        object_ids = self._canvas.find_all()
+        y = None
+
+        if tag is None:
+            object_ids = self._canvas.find_all()
+        else:
+            object_ids = self._canvas.find_withtag(tag)
+
+        if len(object_ids) == 0:
+            self.update_idletasks()
+            width, height = map(int, self._canvas.winfo_geometry().replace("+", "x").split("x")[:2])
+            # print(width, height)
+            if direction == "south":  # south of no objects => top
+                x = int(width/2)
+                y = 0
+            elif direction == "north":  # so, north of no objects => bottom
+                x = int(width/2)
+                y = height
+            elif direction == "west":  # west of no objects => right (extending the logic of south of no objects)
+                x = width
+                y = int(height / 2)
+            elif direction == "east":  # so, east of no objects => left
+                x = 0
+                y = int(height / 2)
+            else:
+                messagebox.showerror(
+                    "Bad direction",
+                    "Bad direction argument for _get_boundary_point function: {}".format(direction))
+                return 0, 0
+            # print(x, y)
+
+            return x, y
+
         for obj_id in object_ids:
             x1, y1, x2, y2 = self._canvas.bbox(obj_id)
-            if y < y2:
-                y = y2
-                x = int((x1 + x2) / 2)
-        if x is None:
-            width = int(self._canvas.winfo_geometry().split("x")[0])
-            return int(width / 2), 0
+
+            if direction == "north":
+                if y is None or y > y1:
+                    x = int((x1 + x2) / 2)
+                    y = y1
+            elif direction == "south":
+                if y is None or y < y2:
+                    x = int((x1 + x2) / 2)
+                    y = y2
+            elif direction == "west":
+                if x is None or x > x1:
+                    x = x1
+                    y = int((y1 + y2) / 2)
+            elif direction == "east":
+                if x is None or x < x2:
+                    x = x2
+                    y = int((y1 + y2) / 2)
+            else:
+                messagebox.showerror(
+                    "Bad direction",
+                    "Bad direction argument for _get_boundary_point function: {}".format(direction))
+                return 0, 0
 
         return x, y
 
     def _put_text_below_lowest_canvas_object_and_get_obj_id_north_x_y_and_bbox_tags_as_eight_tuple(
             self, color, box_type, box_name, box_text):
-        x, y = self._get_x_middle_y_lower_from_lowest_canvas_object()
+        x, y = self._get_boundary_point()  # by default, will give lowest boundary point (tag=None, direction="south")
         y += PADDING_FOR_NEW_OBJECT
 
         tags = ("canvas-obj", box_type, "name:" + box_name)
