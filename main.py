@@ -308,7 +308,7 @@ class FlowChart(tkinter.Tk):
                 box_text = command_data["text"]
 
             text_id, x, y, x1, y1, x2, y2, tags = \
-                self._put_text_below_lowest_canvas_object_and_get_obj_id_north_x_y_and_bbox_tags_as_eight_tuple(
+                self._put_text_near_a_canvas_object_and_get_obj_id_north_x_y_and_bbox_tags_as_eight_tuple(
                     command_data["color"] if "color" in command_data else DEFAULT_COLOR_BOX_TEXT,
                     command_type, command_data["name"], box_text
                 )
@@ -453,10 +453,24 @@ class FlowChart(tkinter.Tk):
 
         return x, y
 
-    def _put_text_below_lowest_canvas_object_and_get_obj_id_north_x_y_and_bbox_tags_as_eight_tuple(
-            self, color, box_type, box_name, box_text):
-        x, y = self._get_boundary_point()  # by default, will give lowest boundary point (tag=None, direction="south")
-        y += PADDING_FOR_NEW_OBJECT
+    def _put_text_near_a_canvas_object_and_get_obj_id_north_x_y_and_bbox_tags_as_eight_tuple(
+            self, color, box_type, box_name, box_text,
+            canvas_object_tags_to_put_near_to=None, direction="south"):
+        x, y = self._get_boundary_point(canvas_object_tags_to_put_near_to, direction)  # None, south => lowest on canvas
+        if direction == "south":
+            y += PADDING_FOR_NEW_OBJECT
+        elif direction == "north":
+            y -= PADDING_FOR_NEW_OBJECT
+        elif direction == "east":
+            x += PADDING_FOR_NEW_OBJECT
+        elif direction == "west":
+            x -= PADDING_FOR_NEW_OBJECT
+        else:
+            messagebox.showerror(
+                "Bad direction",
+                "Bad direction {} in function\n"
+                "_put_text_near_a_canvas_object_and_get_obj_id_north_x_y_and_bbox_tags_as_eight_tuple"
+                "".format(direction))
 
         tags = ("canvas-obj", box_type, "name:" + box_name)
         obj_id = \
