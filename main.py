@@ -307,10 +307,15 @@ class FlowChart(tkinter.Tk):
             else:
                 box_text = command_data["text"]
 
+            place_beside, place_direction = command_data.get("placement", (None, "south"))
+            if place_beside is not None:
+                place_beside = "name:" + place_beside  # this is how a name tag is defined for the canvas
+
             text_id, x, y, x1, y1, x2, y2, tags = \
                 self._put_text_near_a_canvas_object_and_get_obj_id_north_x_y_and_bbox_tags_as_eight_tuple(
                     command_data["color"] if "color" in command_data else DEFAULT_COLOR_BOX_TEXT,
-                    command_type, command_data["name"], box_text
+                    command_type, command_data["name"], box_text,
+                    place_beside, place_direction
                 )
 
             tags = tuple(list(tags) + ["flow-chart-box-" + command_data["name"]])
@@ -473,9 +478,19 @@ class FlowChart(tkinter.Tk):
                 "".format(direction))
 
         tags = ("canvas-obj", box_type, "name:" + box_name)
+
+        if direction == "south":
+            text_anchor = "n"
+        elif direction == "north":
+            text_anchor = "s"
+        elif direction == "east":
+            text_anchor = "w"
+        else:
+            text_anchor = "e"
+
         obj_id = \
-            self._canvas.create_text(x, y, anchor="n", fill=color, tags=tags, text=box_text, justify=tkinter.CENTER,
-                                     font=self._font)
+            self._canvas.create_text(x, y, anchor=text_anchor, fill=color, tags=tags, text=box_text,
+                                     justify=tkinter.CENTER, font=self._font)
         x1, y1, x2, y2 = self._canvas.bbox(obj_id)
         return obj_id, x, y, x1, y1, x2, y2, tags
 
