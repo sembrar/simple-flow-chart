@@ -91,13 +91,56 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         child_widget = self._child_widget_class(child_frame, **self._child_creation_additional_args_dict)
         child_widget.grid(row=0, column=0)
 
+        button_move_up = ttk.Button(child_frame, text=u"\u25B2", width=5)
+        button_move_up.grid(row=0, column=1)
+
+        button_move_down = ttk.Button(child_frame, text=u"\u25BC", width=5)
+        button_move_down.grid(row=0, column=2)
+
         self._children_frames.append(name_of_the_child_frame)
         self._reset_grid_configuration_of_children()
+
+        button_move_up.name_of_child = name_of_the_child_frame
+        button_move_down.name_of_child = name_of_the_child_frame
+        button_move_up.bind("<Button-1>", self._clicked_up_button_in_child_frame)
+        button_move_down.bind("<Button-1>", self._clicked_down_button_in_child_frame)
 
     def _reset_grid_configuration_of_children(self):
         for i in range(len(self._children_frames)):
             self.nametowidget(self._children_frames[i]).grid(row=i, column=0, sticky='w')
         self._button_add.grid(row=len(self._children_frames), sticky='w')
+
+    def _clicked_up_button_in_child_frame(self, event):
+        if not event.widget.instate(["!disabled", "hover"]):
+            return
+
+        name_of_frame = event.widget.name_of_child  # this is saved in button after creation
+        cur_index = self._children_frames.index(name_of_frame)
+
+        if cur_index == 0:  # it is the first one in the list
+            return
+
+        # swap names in the list
+        self._children_frames[cur_index], self._children_frames[cur_index-1] =\
+            self._children_frames[cur_index-1], self._children_frames[cur_index]
+
+        self._reset_grid_configuration_of_children()
+
+    def _clicked_down_button_in_child_frame(self, event):
+        if not event.widget.instate(["!disabled", "hover"]):
+            return
+
+        name_of_frame = event.widget.name_of_child  # this is saved in button after creation
+        cur_index = self._children_frames.index(name_of_frame)
+
+        if cur_index == len(self._children_frames) - 1:  # it is the last widget in the list
+            return
+
+        # swap names in the list
+        self._children_frames[cur_index], self._children_frames[cur_index + 1] = \
+            self._children_frames[cur_index + 1], self._children_frames[cur_index]
+
+        self._reset_grid_configuration_of_children()
 
 
 AVAILABLE_COMMAND_TYPES = "start stop operation decision connection delete delete-all title box font connector".split()
