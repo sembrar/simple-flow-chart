@@ -4,6 +4,8 @@ from tkinter import ttk
 
 DEBUG = False
 
+INT_ENTRY_WIDTH = 8
+
 
 def debug_print(*args, **kwargs):
     if not DEBUG:
@@ -133,7 +135,7 @@ class SingleCommandFrame(ttk.Frame):
             elif d == "autostart":
                 child = SelectOnlyCombobox(label_frame, values=("False", "True"))
             elif d == "dx" or d == "dy" or d == "label-dx" or d == "label-dy" or d == "width" or d == "size":
-                child = IntEntry(label_frame)
+                child = IntEntry(label_frame, width=INT_ENTRY_WIDTH)
             elif d == "points":
                 child = Points(label_frame)
             elif d == "weight":
