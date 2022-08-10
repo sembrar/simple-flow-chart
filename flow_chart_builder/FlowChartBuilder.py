@@ -49,6 +49,8 @@ class SelectOnlyCombobox(ttk.Combobox):
         self.configure(validate="key", validatecommand=self._restrict_keyboard_input)
         if self._func_get_choices is not None:
             self.bind("<Button-1>", self._run_function_to_update_choices)
+        if "values" in kw:
+            self.configure(width=len(max(kw["values"], key=lambda x: len(x))) + 3)
 
     def _restrict_keyboard_input(self):
         return False
