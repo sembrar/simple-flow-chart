@@ -63,7 +63,8 @@ class SelectOnlyCombobox(ttk.Combobox):
 
 class FrameWithAddDeleteMoveChildren(ttk.Frame):
 
-    def __init__(self, master=None, child_widget_class=None, child_creation_additional_args_dict=None, **kw):
+    def __init__(self, master=None, child_widget_class=None, child_creation_additional_args_dict=None,
+                 put_buttons_to_the_left=False, **kw):
         super().__init__(master, **kw)
 
         if child_creation_additional_args_dict is None:
@@ -71,6 +72,7 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
 
         self._child_widget_class = child_widget_class
         self._child_creation_additional_args_dict = child_creation_additional_args_dict
+        self._put_buttons_to_the_left = put_buttons_to_the_left
 
         self._children_frames = []
 
@@ -88,22 +90,39 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         child_frame = ttk.Frame(self)
         name_of_the_child_frame = child_frame.winfo_name()
 
-        child_frame.columnconfigure(0, weight=1)
-
-        child_widget = self._child_widget_class(child_frame, **self._child_creation_additional_args_dict)
-        child_widget.grid(row=0, column=0, sticky='ew')
-
+        widget = self._child_widget_class(child_frame, **self._child_creation_additional_args_dict)
         button_move_up = ttk.Button(child_frame, text=u"\u25B2", width=5)
-        button_move_up.grid(row=0, column=1)
-
         button_move_down = ttk.Button(child_frame, text=u"\u25BC", width=5)
-        button_move_down.grid(row=0, column=2)
-
         button_delete = ttk.Button(child_frame, text=u"\u274C", width=5)
-        button_delete.grid(row=0, column=3)
-
         button_add_above = ttk.Button(child_frame, text=u"+\u2191", width=5)  # the button has + sign, up arrow sign
-        button_add_above.grid(row=0, column=4)
+
+        col = -1
+
+        if self._put_buttons_to_the_left:
+            pass
+        else:  # then the widget is the one that is to the left
+            col += 1
+            widget.grid(row=0, column=col, sticky='ew')
+            child_frame.columnconfigure(col, weight=1)
+
+        col += 1
+        button_move_up.grid(row=0, column=col)
+
+        col += 1
+        button_move_down.grid(row=0, column=col)
+
+        col += 1
+        button_delete.grid(row=0, column=col)
+
+        col += 1
+        button_add_above.grid(row=0, column=col)
+
+        if self._put_buttons_to_the_left:
+            col += 1
+            widget.grid(row=0, column=col, sticky='ew')
+            child_frame.columnconfigure(col, weight=1)
+        else:  # then the widget is the one to the left and it is already put in grid above
+            pass
 
         if above is None:
             self._children_frames.append(name_of_the_child_frame)
@@ -314,14 +333,17 @@ class SingleCommandFrame(ttk.Frame):
 
 class FlowChartFrame(FrameWithAddDeleteMoveChildren):
 
-    def __init__(self, master=None, **kw):
-        super().__init__(master, SingleCommandFrame, **kw)
+    def __init__(self, master=None, put_buttons_to_the_left=False, **kw):
+        super().__init__(master, SingleCommandFrame, put_buttons_to_the_left=put_buttons_to_the_left, **kw)
+
+
+def main():
+    root = tkinter.Tk()
+    widget = FlowChartFrame(root, put_buttons_to_the_left=True)
+    widget.grid(row=0, column=0)
+    root.mainloop()
 
 
 if __name__ == '__main__':
     DEBUG = True
-
-    root = tkinter.Tk()
-    widget = FlowChartFrame(root)
-    widget.grid(row=0, column=0)
-    root.mainloop()
+    main()
