@@ -61,6 +61,45 @@ class SelectOnlyCombobox(ttk.Combobox):
         self.configure(values=self._func_get_choices())
 
 
+class FrameWithAddDeleteMoveChildren(ttk.Frame):
+
+    def __init__(self, master=None, child_widget_class=None, child_creation_additional_args_dict=None, **kw):
+        super().__init__(master, **kw)
+
+        if child_creation_additional_args_dict is None:
+            child_creation_additional_args_dict = {}
+
+        self._child_widget_class = child_widget_class
+        self._child_creation_additional_args_dict = child_creation_additional_args_dict
+
+        self._children_frames = []
+
+        self._button_add = ttk.Button(self, text="+", width=5)
+        self._button_add.grid(row=0, column=0, sticky='w')
+
+        self._button_add.bind("<Button-1>", self._clicked_button_add)
+
+    def _clicked_button_add(self, event):
+        if not event.widget.instate(["!disabled", "hover"]):
+            return
+        self._add_new_child()
+
+    def _add_new_child(self, above=None):
+        child_frame = ttk.Frame(self)
+        name_of_the_child_frame = child_frame.winfo_name()
+
+        child_widget = self._child_widget_class(child_frame, **self._child_creation_additional_args_dict)
+        child_widget.grid(row=0, column=0)
+
+        self._children_frames.append(name_of_the_child_frame)
+        self._reset_grid_configuration_of_children()
+
+    def _reset_grid_configuration_of_children(self):
+        for i in range(len(self._children_frames)):
+            self.nametowidget(self._children_frames[i]).grid(row=i, column=0, sticky='w')
+        self._button_add.grid(row=len(self._children_frames), sticky='w')
+
+
 AVAILABLE_COMMAND_TYPES = "start stop operation decision connection delete delete-all title box font connector".split()
 
 DETAIL_TYPES_FOR_COMMANDS = dict()
@@ -200,6 +239,6 @@ if __name__ == '__main__':
     DEBUG = True
 
     root = tkinter.Tk()
-    widget = SinglePoint(root)
+    widget = FrameWithAddDeleteMoveChildren(root, ttk.Entry)
     widget.grid(row=0, column=0)
     root.mainloop()
