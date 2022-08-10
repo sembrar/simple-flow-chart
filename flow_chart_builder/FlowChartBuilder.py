@@ -90,6 +90,45 @@ class CombosNameAndDirection(ttk.Frame):
         self._direction_combo.grid(row=0, column=1)
 
 
+class SinglePoint(ttk.Frame):
+
+    def __init__(self, master=None, **kw):
+        super().__init__(master, **kw)
+
+        col = -1  # used in .grid method
+
+        col += 1
+        ttk.Label(self, text="(").grid(row=0, column=col)
+
+        self._combo_x = SelectOnlyCombobox(self, values=("start_x", "end_x", "min_x", "max_x", "mid_x"))
+        col += 1
+        self._combo_x.grid(row=0, column=col)
+
+        col += 1
+        ttk.Label(self, text="+").grid(row=0, column=col)
+
+        self._entry_int_dx = IntEntry(self, width=INT_ENTRY_WIDTH)
+        col += 1
+        self._entry_int_dx.grid(row=0, column=col)
+
+        col += 1
+        ttk.Label(self, text=",").grid(row=0, column=col)
+
+        self._combo_y = SelectOnlyCombobox(self, values=("start_y", "end_y", "min_y", "max_y", "mid_y"))
+        col += 1
+        self._combo_y.grid(row=0, column=col)
+
+        col += 1
+        ttk.Label(self, text="+").grid(row=0, column=col)
+
+        self._entry_int_dy = IntEntry(self, width=INT_ENTRY_WIDTH)
+        col += 1
+        self._entry_int_dy.grid(row=0, column=col)
+
+        col += 1
+        ttk.Label(self, text=")").grid(row=0, column=col)
+
+
 class Points(ttk.Frame):
 
     def __init__(self, master=None, **kw):
@@ -161,6 +200,6 @@ if __name__ == '__main__':
     DEBUG = True
 
     root = tkinter.Tk()
-    widget = SingleCommandFrame(root)
+    widget = SinglePoint(root)
     widget.grid(row=0, column=0)
     root.mainloop()
