@@ -310,10 +310,16 @@ class SingleCommandFrame(ttk.Frame):
             debug_print("Removed detail:", detail_name)
 
 
+class FlowChartFrame(FrameWithAddDeleteMoveChildren):
+
+    def __init__(self, master=None, **kw):
+        super().__init__(master, SingleCommandFrame, **kw)
+
+
 if __name__ == '__main__':
     DEBUG = True
 
     root = tkinter.Tk()
-    widget = Points(root)
+    widget = FlowChartFrame(root)
     widget.grid(row=0, column=0)
     root.mainloop()
