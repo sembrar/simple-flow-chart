@@ -100,17 +100,26 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         button_delete = ttk.Button(child_frame, text=u"\u274C", width=5)
         button_delete.grid(row=0, column=3)
 
-        self._children_frames.append(name_of_the_child_frame)
+        button_add_above = ttk.Button(child_frame, text=u"+\u2191", width=5)  # the button has + sign, up arrow sign
+        button_add_above.grid(row=0, column=4)
+
+        if above is None:
+            self._children_frames.append(name_of_the_child_frame)
+        else:
+            index_to_insert_at = self._children_frames.index(above)
+            self._children_frames.insert(index_to_insert_at, name_of_the_child_frame)
         self._reset_grid_configuration_of_children()
 
         # store name of the frame as an attribute of buttons for easy access during event listening
         button_move_up.name_of_child = name_of_the_child_frame
         button_move_down.name_of_child = name_of_the_child_frame
         button_delete.name_of_child = name_of_the_child_frame
+        button_add_above.name_of_child = name_of_the_child_frame
 
         button_move_up.bind("<Button-1>", self._clicked_up_button_in_child_frame)
         button_move_down.bind("<Button-1>", self._clicked_down_button_in_child_frame)
         button_delete.bind("<Button-1>", self._clicked_delete_in_child_frame)
+        button_add_above.bind("<Button-1>", self._clicked_add_above_button_in_child_frame)
 
     def _reset_grid_configuration_of_children(self):
         for i in range(len(self._children_frames)):
@@ -159,6 +168,13 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
             self._children_frames[cur_index + 1], self._children_frames[cur_index]
 
         self._reset_grid_configuration_of_children()
+
+    def _clicked_add_above_button_in_child_frame(self, event):
+        if not event.widget.instate(["!disabled", "hover"]):
+            return
+
+        name_of_frame = event.widget.name_of_child  # this is saved in button after creation
+        self._add_new_child(name_of_frame)
 
 
 AVAILABLE_COMMAND_TYPES = "start stop operation decision connection delete delete-all title box font connector".split()
