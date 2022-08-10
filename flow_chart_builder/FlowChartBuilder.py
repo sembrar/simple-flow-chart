@@ -97,13 +97,20 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         button_move_down = ttk.Button(child_frame, text=u"\u25BC", width=5)
         button_move_down.grid(row=0, column=2)
 
+        button_delete = ttk.Button(child_frame, text=u"\u274C", width=5)
+        button_delete.grid(row=0, column=3)
+
         self._children_frames.append(name_of_the_child_frame)
         self._reset_grid_configuration_of_children()
 
+        # store name of the frame as an attribute of buttons for easy access during event listening
         button_move_up.name_of_child = name_of_the_child_frame
         button_move_down.name_of_child = name_of_the_child_frame
+        button_delete.name_of_child = name_of_the_child_frame
+
         button_move_up.bind("<Button-1>", self._clicked_up_button_in_child_frame)
         button_move_down.bind("<Button-1>", self._clicked_down_button_in_child_frame)
+        button_delete.bind("<Button-1>", self._clicked_delete_in_child_frame)
 
     def _reset_grid_configuration_of_children(self):
         for i in range(len(self._children_frames)):
@@ -124,6 +131,17 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         self._children_frames[cur_index], self._children_frames[cur_index-1] =\
             self._children_frames[cur_index-1], self._children_frames[cur_index]
 
+        self._reset_grid_configuration_of_children()
+
+    def _clicked_delete_in_child_frame(self, event):
+        if not event.widget.instate(["!disabled", "hover"]):
+            return
+
+        name_of_frame = event.widget.name_of_child  # this is saved in button after creation
+        self.nametowidget(name_of_frame).destroy()
+
+        # remove it from children frames list and reset grid configuration
+        self._children_frames.remove(name_of_frame)
         self._reset_grid_configuration_of_children()
 
     def _clicked_down_button_in_child_frame(self, event):
