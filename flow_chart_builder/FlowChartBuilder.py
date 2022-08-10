@@ -245,12 +245,10 @@ class SinglePoint(ttk.Frame):
         ttk.Label(self, text=")").grid(row=0, column=col)
 
 
-class Points(ttk.Frame):
+class Points(FrameWithAddDeleteMoveChildren):
 
     def __init__(self, master=None, **kw):
-        super().__init__(master, **kw)
-
-        ttk.Label(self, text="Placeholder").grid(row=0, column=0)
+        super().__init__(master, SinglePoint, **kw)
 
 
 class SingleCommandFrame(ttk.Frame):
@@ -316,6 +314,6 @@ if __name__ == '__main__':
     DEBUG = True
 
     root = tkinter.Tk()
-    widget = FrameWithAddDeleteMoveChildren(root, ttk.Entry)
+    widget = Points(root)
     widget.grid(row=0, column=0)
     root.mainloop()
