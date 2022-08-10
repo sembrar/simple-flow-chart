@@ -96,6 +96,8 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         button_delete = ttk.Button(child_frame, text=u"\u274C", width=5)
         button_add_above = ttk.Button(child_frame, text=u"+\u2191", width=5)  # the button has + sign, up arrow sign
 
+        child_frame.inner_widget = widget.winfo_name()  # this can be used to grab the widget from outside
+
         col = -1
 
         if self._put_buttons_to_the_left:
@@ -273,8 +275,10 @@ class Points(FrameWithAddDeleteMoveChildren):
 
 
 class SingleCommandFrame(ttk.Frame):
-    def __init__(self, master=None, **kw):
+    def __init__(self, master=None, function_to_get_names_of_boxes=None, **kw):
         super().__init__(master, **kw)
+
+        self._function_to_get_names_of_boxes = function_to_get_names_of_boxes
 
         label_frame_type = ttk.Labelframe(self, text="Type")
         label_frame_type.grid(row=0, column=0, sticky='w')
@@ -305,7 +309,7 @@ class SingleCommandFrame(ttk.Frame):
             if d == "name" or d == "text" or d == "label" or d == "label-color":
                 child = ttk.Entry(label_frame)
             elif d == "placement" or d == "start" or d == "end":
-                child = CombosNameAndDirection(label_frame)  # todo pass function to get names for combo
+                child = CombosNameAndDirection(label_frame, self._function_to_get_names_of_boxes)
             elif d == "autostart":
                 child = SelectOnlyCombobox(label_frame, values=("False", "True"))
             elif d == "dx" or d == "dy" or d == "label-dx" or d == "label-dy" or d == "width" or d == "size":
@@ -334,7 +338,24 @@ class SingleCommandFrame(ttk.Frame):
 class FlowChartFrame(FrameWithAddDeleteMoveChildren):
 
     def __init__(self, master=None, put_buttons_to_the_left=False, **kw):
-        super().__init__(master, SingleCommandFrame, put_buttons_to_the_left=put_buttons_to_the_left, **kw)
+        super().__init__(master, SingleCommandFrame,
+                         child_creation_additional_args_dict={
+                             "function_to_get_names_of_boxes": self._get_names_of_boxes_from_commands},
+                         put_buttons_to_the_left=put_buttons_to_the_left, **kw)
+
+    def _get_names_of_boxes_from_commands(self):
+        names = []
+        for widget_name in self._children_frames:
+            child_frame = self.nametowidget(widget_name)
+            inner_widget = child_frame.nametowidget(child_frame.inner_widget)  # this will be a SingleCommandFrame obj
+            # todo make the following efficient by creating get functions in SingleCommandFrame class
+            for c in inner_widget.winfo_children():
+                if type(c) == ttk.Labelframe and c.cget("text").lower() == "name":
+                    name = c.winfo_children()[0].get().strip()
+                    if name != "":
+                        names.append(name)
+                    break
+        return names
 
 
 def main():
