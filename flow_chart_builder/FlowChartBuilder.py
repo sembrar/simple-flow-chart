@@ -88,8 +88,10 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         child_frame = ttk.Frame(self)
         name_of_the_child_frame = child_frame.winfo_name()
 
+        child_frame.columnconfigure(0, weight=1)
+
         child_widget = self._child_widget_class(child_frame, **self._child_creation_additional_args_dict)
-        child_widget.grid(row=0, column=0)
+        child_widget.grid(row=0, column=0, sticky='ew')
 
         button_move_up = ttk.Button(child_frame, text=u"\u25B2", width=5)
         button_move_up.grid(row=0, column=1)
@@ -123,7 +125,7 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
 
     def _reset_grid_configuration_of_children(self):
         for i in range(len(self._children_frames)):
-            self.nametowidget(self._children_frames[i]).grid(row=i, column=0, sticky='w')
+            self.nametowidget(self._children_frames[i]).grid(row=i, column=0, sticky='ew')
         self._button_add.grid(row=len(self._children_frames), sticky='w')
 
     def _clicked_up_button_in_child_frame(self, event):
