@@ -499,6 +499,28 @@ class SingleCommandFrame(ttk.Frame):
             child.destroy()
             debug_print("Removed detail:", detail_name)
 
+    def get_data(self):
+        d = {"type": self._var_command_type.get()}
+        children = self.winfo_children()
+        for child in children:
+            if isinstance(child, LabelFramedWidget):
+                d[child.cget("text").lower()] = child.get_data()
+        return d
+
+    def set_data(self, data):
+        try:
+            self._var_command_type.set(data["type"])  # this will trigger the bounding function and will create
+            # required LabelFramedWidgets
+        except KeyError:
+            return
+        children = self.winfo_children()
+        for child in children:
+            if isinstance(child, LabelFramedWidget):
+                try:
+                    child.set_data(data[child.cget("text").lower()])
+                except KeyError:
+                    pass
+
 
 class FlowChartFrame(FrameWithAddDeleteMoveChildren):
 
@@ -522,10 +544,32 @@ class FlowChartFrame(FrameWithAddDeleteMoveChildren):
                     break
         return names
 
+    def get_data(self):
+        data = []
+        for widget_name in self._children_frames:
+            child_frame = self.nametowidget(widget_name)
+            inner_widget = child_frame.nametowidget(
+                child_frame.inner_widget_name)  # this will be a SingleCommandFrame obj
+            data.append(inner_widget.get_data())
+        return data
+
+    def set_data(self, data):
+        """
+        :type data: list[dict]
+        """
+        self.delete_all_children()
+
+        for d in data:
+            self._add_new_child()
+            child_frame = self.nametowidget(self._children_frames[-1])
+            inner_single_command_frame = child_frame.nametowidget(child_frame.inner_widget_name)
+            inner_single_command_frame.set_data(d)
+
 
 def main():
     root = tkinter.Tk()
     widget = FlowChartFrame(root, put_buttons_to_the_left=True)
+    widget.set_data([{"type": "start", "name": "start"}, {"type": "operation", "name": "mix"}])
     widget.grid(row=0, column=0)
     root.mainloop()
 
