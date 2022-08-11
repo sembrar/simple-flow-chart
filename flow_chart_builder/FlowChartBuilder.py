@@ -436,14 +436,14 @@ class FlowChartFrame(FrameWithAddDeleteMoveChildren):
                              "function_to_get_names_of_boxes": self._get_names_of_boxes_from_commands},
                          put_buttons_to_the_left=put_buttons_to_the_left, **kw)
 
-    def _get_names_of_boxes_from_commands(self):  # fixme: breaks as LabelFramedWidgets are used in SingleCommandFrame
+    def _get_names_of_boxes_from_commands(self):
         names = []
         for widget_name in self._children_frames:
             child_frame = self.nametowidget(widget_name)
             inner_widget = child_frame.nametowidget(child_frame.inner_widget)  # this will be a SingleCommandFrame obj
             # todo make the following efficient by creating get functions in SingleCommandFrame class
             for c in inner_widget.winfo_children():
-                if type(c) == ttk.Labelframe and c.cget("text").lower() == "name":
+                if isinstance(c, LabelFramedWidget) and c.cget("text").lower() == "name":
                     name = c.winfo_children()[0].get().strip()
                     if name != "":
                         names.append(name)
