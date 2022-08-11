@@ -7,10 +7,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import font
 
-from MyModules.Widgets.ScrolledWidgets.ScrolledText import ScrolledText
-
-from scrolled_widgets.ScrolledFrameInFrame import ScrolledFrameInFrame
-from flow_chart_builder.FlowChartBuilder import FlowChartFrame
+from scrolled_widgets.ScrolledTextFrame import ScrolledTextFrame
 
 import json
 from collections import OrderedDict
@@ -64,10 +61,11 @@ class FlowChart(tkinter.Tk):
         self._canvas.configure(yscrollcommand=v_scroll_for_canvas.set)
         self._canvas.configure(xscrollcommand=h_scroll_for_canvas.set)
 
-        self._text = ScrolledText(label_frame_for_text, horizontal_scroll=True)
-        self._text.grid(row=0, column=0, sticky='news')
+        scrolled_text_frame = ScrolledTextFrame(label_frame_for_text, horizontal_scroll=True)
+        scrolled_text_frame.grid(row=0, column=0, sticky='news')
         label_frame_for_text.rowconfigure(0, weight=1)
         label_frame_for_text.columnconfigure(0, weight=1)
+        self._text = scrolled_text_frame.text
 
         self._commands = []
         self._cur_command_index = 0
@@ -660,14 +658,4 @@ def main():
 
 
 if __name__ == '__main__':
-    root = tkinter.Tk()
-
-    sfif = ScrolledFrameInFrame(root)
-    sfif.grid(row=0, column=0, sticky='news')
-    root.rowconfigure(0, weight=1)
-    root.columnconfigure(0, weight=1)
-
-    fc = FlowChartFrame(sfif.inner_scrolled_frame, True)
-    fc.grid(row=0, column=0)
-
-    root.mainloop()
+    main()
