@@ -222,11 +222,11 @@ class CombosNameAndDirection(ttk.Frame):
         super().__init__(master, **kw)
 
         self._func_to_get_names = func_to_get_names
-        self._name_combo = SelectOnlyCombobox(self, self._func_to_get_names)
-        self._name_combo.grid(row=0, column=0)
+        self.name_combo = SelectOnlyCombobox(self, self._func_to_get_names)
+        self.name_combo.grid(row=0, column=0)
 
-        self._direction_combo = SelectOnlyCombobox(self, values=("north", "east", "south", "west"))
-        self._direction_combo.grid(row=0, column=1)
+        self.direction_combo = SelectOnlyCombobox(self, values=("north", "east", "south", "west"))
+        self.direction_combo.grid(row=0, column=1)
 
 
 class SinglePoint(ttk.Frame):
@@ -351,10 +351,17 @@ class LabelFramedCombosNameAndDirection(LabelFramedWidget):
         super().__init__(master, label_text, CombosNameAndDirection, kwargs_for_label_frame, **kwargs_for_inner_widget)
 
     def get_data(self):
-        pass  # todo
+        inner_widget = self._inner_widget  # type: CombosNameAndDirection
+        return inner_widget.name_combo.get(), inner_widget.direction_combo.get()
 
     def set_data(self, data):
-        pass  # todo
+        inner_widget = self._inner_widget  # type: CombosNameAndDirection
+        try:
+            name, direction = data
+        except ValueError:
+            name, direction = "", ""
+        inner_widget.name_combo.set(name)
+        inner_widget.direction_combo.set(direction)
 
 
 class LabelFramedPoints(LabelFramedWidget):
