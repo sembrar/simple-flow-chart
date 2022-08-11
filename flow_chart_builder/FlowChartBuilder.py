@@ -274,6 +274,101 @@ class Points(FrameWithAddDeleteMoveChildren):
         super().__init__(master, SinglePoint, **kw)
 
 
+class LabelFramedWidget(ttk.Labelframe):
+
+    def __init__(self, master=None, label_text="", inner_widget_class=None,
+                 kwargs_for_label_frame=None, **kwargs_for_inner_widget):
+        if kwargs_for_label_frame is None:
+            kwargs_for_label_frame = {}
+        kwargs_for_label_frame["text"] = label_text  # if "text" is also in the kwargs, it will be overwritten
+        super().__init__(master, **kwargs_for_label_frame)
+
+        self._inner_widget = inner_widget_class(master=self, **kwargs_for_inner_widget)
+        self._inner_widget.grid(row=0, column=0)
+
+    def get_data(self):
+        raise NotImplementedError
+
+    def set_data(self, data):
+        raise NotImplementedError
+
+
+class LabelFramedEntry(LabelFramedWidget):
+
+    def __init__(self, master=None, label_text="",
+                 kwargs_for_label_frame=None, **kwargs_for_inner_widget):
+        super().__init__(master, label_text, ttk.Entry, kwargs_for_label_frame, **kwargs_for_inner_widget)
+
+    def get_data(self):
+        return ttk.Entry.get(self._inner_widget)
+
+    def set_data(self, data):
+        inner_widget = self._inner_widget  # type: ttk.Entry
+        inner_widget.delete(0, tkinter.END)
+        inner_widget.insert(0, data)
+
+
+class LabelFramedIntEntry(LabelFramedWidget):
+
+    def __init__(self, master=None, label_text="",
+                 kwargs_for_label_frame=None, **kwargs_for_inner_widget):
+        super().__init__(master, label_text, IntEntry, kwargs_for_label_frame, **kwargs_for_inner_widget)
+
+    def get_data(self):
+        try:
+            return int(IntEntry.get(self._inner_widget))
+        except ValueError:
+            return 0
+
+    def set_data(self, data):
+        try:
+            value = str(int(data))
+        except ValueError:
+            value = ""
+        inner_widget = self._inner_widget  # type: IntEntry
+        inner_widget.delete(0, tkinter.END)
+        inner_widget.insert(0, value)
+
+
+class LabelFramedSelectOnlyCombobox(LabelFramedWidget):
+
+    def __init__(self, master=None, label_text="",
+                 kwargs_for_label_frame=None, **kwargs_for_inner_widget):
+        super().__init__(master, label_text, SelectOnlyCombobox, kwargs_for_label_frame, **kwargs_for_inner_widget)
+
+    def get_data(self):
+        pass  # todo
+
+    def set_data(self, data):
+        pass  # todo
+
+
+class LabelFramedCombosNameAndDirection(LabelFramedWidget):
+
+    def __init__(self, master=None, label_text="",
+                 kwargs_for_label_frame=None, **kwargs_for_inner_widget):
+        super().__init__(master, label_text, CombosNameAndDirection, kwargs_for_label_frame, **kwargs_for_inner_widget)
+
+    def get_data(self):
+        pass  # todo
+
+    def set_data(self, data):
+        pass  # todo
+
+
+class LabelFramedPoints(LabelFramedWidget):
+
+    def __init__(self, master=None, label_text="",
+                 kwargs_for_label_frame=None, **kwargs_for_inner_widget):
+        super().__init__(master, label_text, Points, kwargs_for_label_frame, **kwargs_for_inner_widget)
+
+    def get_data(self):
+        pass  # todo
+
+    def set_data(self, data):
+        pass  # todo
+
+
 class SingleCommandFrame(ttk.Frame):
     def __init__(self, master=None, function_to_get_names_of_boxes=None, **kw):
         super().__init__(master, **kw)
@@ -303,26 +398,24 @@ class SingleCommandFrame(ttk.Frame):
         self._remove_existing_detail_frames()
 
         for d, i in zip(available_detail_types, range(len(available_detail_types))):
-            label_frame = ttk.Labelframe(self, text=d)
-            label_frame.grid(row=0, column=i+1)  # the column=0 is for "Type" i.e. command type
-
             if d == "name" or d == "text" or d == "label" or d == "label-color":
-                child = ttk.Entry(label_frame)
+                label_framed_widget = LabelFramedEntry(self, label_text=d)
             elif d == "placement" or d == "start" or d == "end":
-                child = CombosNameAndDirection(label_frame, self._function_to_get_names_of_boxes)
+                label_framed_widget = LabelFramedCombosNameAndDirection(
+                    self, label_text=d, func_to_get_names=self._function_to_get_names_of_boxes)
             elif d == "autostart":
-                child = SelectOnlyCombobox(label_frame, values=("False", "True"))
+                label_framed_widget = LabelFramedSelectOnlyCombobox(self, label_text=d, values=("False", "True"))
             elif d == "dx" or d == "dy" or d == "label-dx" or d == "label-dy" or d == "width" or d == "size":
-                child = IntEntry(label_frame, width=INT_ENTRY_WIDTH)
+                label_framed_widget = LabelFramedIntEntry(self, label_text=d, width=INT_ENTRY_WIDTH)
             elif d == "points":
-                child = Points(label_frame)
+                label_framed_widget = LabelFramedPoints(self, label_text=d)
             elif d == "weight":
-                child = SelectOnlyCombobox(label_frame, values=("normal", "bold"))
+                label_framed_widget = LabelFramedSelectOnlyCombobox(self, label_text=d, values=("normal", "bold"))
             else:
                 print("Unknown detail type:", d)
                 return
 
-            child.grid(row=0, column=0)
+            label_framed_widget.grid(row=0, column=i + 1)  # the column=0 is for "Type" i.e. command type
 
     def _remove_existing_detail_frames(self):
         children = self.winfo_children()
@@ -343,7 +436,7 @@ class FlowChartFrame(FrameWithAddDeleteMoveChildren):
                              "function_to_get_names_of_boxes": self._get_names_of_boxes_from_commands},
                          put_buttons_to_the_left=put_buttons_to_the_left, **kw)
 
-    def _get_names_of_boxes_from_commands(self):
+    def _get_names_of_boxes_from_commands(self):  # fixme: breaks as LabelFramedWidgets are used in SingleCommandFrame
         names = []
         for widget_name in self._children_frames:
             child_frame = self.nametowidget(widget_name)
