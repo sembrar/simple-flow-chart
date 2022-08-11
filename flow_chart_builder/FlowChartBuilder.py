@@ -337,10 +337,11 @@ class LabelFramedSelectOnlyCombobox(LabelFramedWidget):
         super().__init__(master, label_text, SelectOnlyCombobox, kwargs_for_label_frame, **kwargs_for_inner_widget)
 
     def get_data(self):
-        pass  # todo
+        return SelectOnlyCombobox.get(self._inner_widget)
 
     def set_data(self, data):
-        pass  # todo
+        inner_widget = self._inner_widget  # type: SelectOnlyCombobox
+        inner_widget.set(data)  # Combobox provides this direct set method
 
 
 class LabelFramedCombosNameAndDirection(LabelFramedWidget):
