@@ -9,6 +9,9 @@ from tkinter import font
 
 from MyModules.Widgets.ScrolledWidgets.ScrolledText import ScrolledText
 
+from scrolled_widgets.ScrolledFrameInFrame import ScrolledFrameInFrame
+from flow_chart_builder.FlowChartBuilder import FlowChartFrame
+
 import json
 from collections import OrderedDict
 
@@ -657,4 +660,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    root = tkinter.Tk()
+
+    sfif = ScrolledFrameInFrame(root)
+    sfif.grid(row=0, column=0, sticky='news')
+    root.rowconfigure(0, weight=1)
+    root.columnconfigure(0, weight=1)
+
+    fc = FlowChartFrame(sfif.inner_scrolled_frame, True)
+    fc.grid(row=0, column=0)
+
+    root.mainloop()
