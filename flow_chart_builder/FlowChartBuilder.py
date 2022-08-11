@@ -96,7 +96,7 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         button_delete = ttk.Button(child_frame, text=u"\u274C", width=5)
         button_add_above = ttk.Button(child_frame, text=u"+\u2191", width=5)  # the button has + sign, up arrow sign
 
-        child_frame.inner_widget = widget.winfo_name()  # this can be used to grab the widget from outside
+        child_frame.inner_widget_name = widget.winfo_name()  # this can be used to grab the widget from outside
 
         col = -1
 
@@ -199,6 +199,11 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         name_of_frame = event.widget.name_of_child  # this is saved in button after creation
         self._add_new_child(name_of_frame)
 
+    def delete_all_children(self):
+        while len(self._children_frames) > 0:
+            last_child_frame_name = self._children_frames.pop()
+            self.nametowidget(last_child_frame_name).destroy()
+
 
 AVAILABLE_COMMAND_TYPES = "start stop operation decision connection delete delete-all title box font connector".split()
 
@@ -267,11 +272,70 @@ class SinglePoint(ttk.Frame):
         col += 1
         ttk.Label(self, text=")").grid(row=0, column=col)
 
+    def get_data(self):
+        x_type = self._combo_x.get()
+        try:
+            x_delta = int(self._entry_int_dx.get())
+        except ValueError:
+            x_delta = 0
+
+        y_type = self._combo_y.get()
+        try:
+            y_delta = int(self._entry_int_dy.get())
+        except ValueError:
+            y_delta = 0
+
+        return (x_type, x_delta), (y_type, y_delta)
+
+    def set_data(self, data):
+        try:
+            ((x_type, x_delta), (y_type, y_delta)) = data
+        except ValueError:
+            ((x_type, x_delta), (y_type, y_delta)) = (("", ""), ("", ""))
+        try:
+            int(x_delta)
+        except ValueError:
+            x_delta = ""
+        try:
+            int(y_delta)
+        except ValueError:
+            y_delta = ""
+        self._combo_x.set(x_type)
+        self._combo_y.set(y_type)
+        self._entry_int_dx.delete(0, tkinter.END)
+        self._entry_int_dx.insert(0, str(x_delta))
+        self._entry_int_dy.delete(0, tkinter.END)
+        self._entry_int_dy.insert(0, str(y_delta))
+
 
 class Points(FrameWithAddDeleteMoveChildren):
 
     def __init__(self, master=None, **kw):
         super().__init__(master, SinglePoint, **kw)
+
+    def get_data(self):
+        data = []
+        for child_frame_name in self._children_frames:
+            # child_frame_name is the name of the frame enclosing the SinglePoint object and different buttons
+            # SinglePoint object's name can be accessed by converting the above name to widget and accessing its
+            # inner_widget_name attribute
+            child_frame = self.nametowidget(child_frame_name)
+            single_point_object = child_frame.nametowidget(child_frame.inner_widget_name)  # type: SinglePoint
+            data.append(single_point_object.get_data())
+        return data
+
+    def set_data(self, data):
+        """
+        :type data: list[tuple]
+        """
+
+        self.delete_all_children()
+
+        for each_data_tuple in data:
+            self._add_new_child()  # create new child
+            child_frame = self.nametowidget(self._children_frames[-1])  # recently converted child frame
+            single_point_object = child_frame.nametowidget(child_frame.inner_widget_name)  # type: SinglePoint
+            single_point_object.set_data(each_data_tuple)
 
 
 class LabelFramedWidget(ttk.Labelframe):
@@ -448,7 +512,7 @@ class FlowChartFrame(FrameWithAddDeleteMoveChildren):
         names = []
         for widget_name in self._children_frames:
             child_frame = self.nametowidget(widget_name)
-            inner_widget = child_frame.nametowidget(child_frame.inner_widget)  # this will be a SingleCommandFrame obj
+            inner_widget = child_frame.nametowidget(child_frame.inner_widget_name)  # this will be a SingleCommandFrame obj
             # todo make the following efficient by creating get functions in SingleCommandFrame class
             for c in inner_widget.winfo_children():
                 if isinstance(c, LabelFramedWidget) and c.cget("text").lower() == "name":
