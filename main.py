@@ -58,11 +58,12 @@ class FlowChart(tkinter.Tk):
         label_frame_for_text = ttk.Labelframe(paned_window, text="Text: Commands")
         paned_window.add(label_frame_for_text)
 
-        scrolled_canvas_frame = ScrollCanvasFrame(self._label_frame_for_canvas, bg="light blue")
-        scrolled_canvas_frame.grid(row=0, column=0, sticky='news')
+        self._scrolled_canvas_frame = ScrollCanvasFrame(self._label_frame_for_canvas, bg="light blue")
+        self._scrolled_canvas_frame.grid(row=0, column=0, sticky='news')
         self._label_frame_for_canvas.rowconfigure(0, weight=1)
         self._label_frame_for_canvas.columnconfigure(0, weight=1)
-        self._canvas = scrolled_canvas_frame.canvas  # fixme: remove self._canvas and use the right hand side instead
+        self._canvas = self._scrolled_canvas_frame.canvas
+        # fixme: remove self._canvas and use the right hand side instead
 
         scrolled_text_frame = ScrolledTextFrame(label_frame_for_text, horizontal_scroll=True)
         scrolled_text_frame.grid(row=0, column=0, sticky='news')
@@ -380,7 +381,7 @@ class FlowChart(tkinter.Tk):
             raise e
 
         finally:
-            self._set_canvas_scroll_region()
+            self._scrolled_canvas_frame.reset_scroll_region(PADDING_FOR_NEW_OBJECT)
 
     def _get_boundary_point(self, tag=None, direction="south"):
         """
@@ -575,27 +576,6 @@ class FlowChart(tkinter.Tk):
         if corner == "east":
             return x2, int((y1 + y2) / 2)
         raise ValueError("corner {} is unknown".format(corner))
-
-    def _set_canvas_scroll_region(self):
-        all_canvas_objects = self._canvas.find_all()
-        if len(all_canvas_objects) == 0:
-            return
-
-        bboxes = tuple(map(lambda x: self._canvas.bbox(x), all_canvas_objects))
-
-        if len(all_canvas_objects) == 1:
-            x_min, y_min, x_max, y_max = bboxes[0]
-        else:
-            x_min = min(bboxes, key=lambda b: b[0])[0]
-            x_max = max(bboxes, key=lambda b: b[2])[2]
-            y_min = min(bboxes, key=lambda b: b[1])[1]
-            y_max = max(bboxes, key=lambda b: b[3])[3]
-
-        scroll_region = (
-            x_min - PADDING_FOR_NEW_OBJECT, y_min - PADDING_FOR_NEW_OBJECT,
-            x_max + PADDING_FOR_NEW_OBJECT, y_max + PADDING_FOR_NEW_OBJECT)
-
-        self._canvas.configure(scrollregion=scroll_region)
 
     def _write_commands_to_text(self, command_index=None):
 
