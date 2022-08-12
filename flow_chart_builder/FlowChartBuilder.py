@@ -20,7 +20,8 @@ class IntEntry(ttk.Entry):
         validation_command = self.register(self._int_validation)  # register needed for additional substitution args
         self.configure(validate="key", validatecommand=(validation_command, "%P"))
 
-    def _int_validation(self, new_text_if_allowed):
+    @staticmethod
+    def _int_validation(new_text_if_allowed):
         new_text_if_allowed = new_text_if_allowed.strip()
         if new_text_if_allowed == "":
             return True
@@ -54,7 +55,8 @@ class SelectOnlyCombobox(ttk.Combobox):
         if "values" in kw:
             self.configure(width=len(max(kw["values"], key=lambda x: len(x))) + 3)
 
-    def _restrict_keyboard_input(self):
+    @staticmethod
+    def _restrict_keyboard_input():
         return False
 
     def _run_function_to_update_choices(self, _):
@@ -212,7 +214,8 @@ DETAIL_TYPES_FOR_COMMANDS["start"] = ("name", "placement", "autostart", "dx", "d
 DETAIL_TYPES_FOR_COMMANDS["stop"] = DETAIL_TYPES_FOR_COMMANDS["start"]
 DETAIL_TYPES_FOR_COMMANDS["operation"] = ("name", "text", "placement", "autostart", "dx", "dy")
 DETAIL_TYPES_FOR_COMMANDS["decision"] = DETAIL_TYPES_FOR_COMMANDS["operation"]
-DETAIL_TYPES_FOR_COMMANDS["connection"] = ("start", "end", "points", "autostart", "label", "label-dx", "label-dy", "label-color")
+DETAIL_TYPES_FOR_COMMANDS["connection"] = ("start", "end", "points", "autostart",
+                                           "label", "label-dx", "label-dy", "label-color")
 DETAIL_TYPES_FOR_COMMANDS["delete"] = ("name", "autostart")
 DETAIL_TYPES_FOR_COMMANDS["delete-all"] = ("autostart",)
 DETAIL_TYPES_FOR_COMMANDS["title"] = ("text", "autostart")
@@ -534,7 +537,8 @@ class FlowChartFrame(FrameWithAddDeleteMoveChildren):
         names = []
         for widget_name in self._children_frames:
             child_frame = self.nametowidget(widget_name)
-            inner_widget = child_frame.nametowidget(child_frame.inner_widget_name)  # this will be a SingleCommandFrame obj
+            inner_widget = child_frame.nametowidget(child_frame.inner_widget_name)
+            # this above inner widget is a SingleCommandFrame obj
             # todo make the following efficient by creating get functions in SingleCommandFrame class
             for c in inner_widget.winfo_children():
                 if isinstance(c, LabelFramedWidget) and c.cget("text").lower() == "name":
