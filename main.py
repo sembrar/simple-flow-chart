@@ -8,6 +8,7 @@ from tkinter import messagebox
 from tkinter import font
 
 from scrolled_widgets.ScrolledTextFrame import ScrolledTextFrame
+from scrolled_widgets.ScrolledCanvasFrame import ScrollCanvasFrame
 
 import json
 from collections import OrderedDict
@@ -46,20 +47,11 @@ class FlowChart(tkinter.Tk):
         label_frame_for_text = ttk.Labelframe(paned_window, text="Text: Commands")
         paned_window.add(label_frame_for_text)
 
-        self._canvas = tkinter.Canvas(self._label_frame_for_canvas, bg="light blue")
-        self._canvas.grid(row=0, column=0, sticky='news')
+        scrolled_canvas_frame = ScrollCanvasFrame(self._label_frame_for_canvas, bg="light blue")
+        scrolled_canvas_frame.grid(row=0, column=0, sticky='news')
         self._label_frame_for_canvas.rowconfigure(0, weight=1)
         self._label_frame_for_canvas.columnconfigure(0, weight=1)
-
-        v_scroll_for_canvas = ttk.Scrollbar(
-            self._label_frame_for_canvas, orient=tkinter.VERTICAL, command=self._canvas.yview)
-        v_scroll_for_canvas.grid(row=0, column=1, sticky='ns')
-        h_scroll_for_canvas = ttk.Scrollbar(
-            self._label_frame_for_canvas, orient=tkinter.HORIZONTAL, command=self._canvas.xview)
-        h_scroll_for_canvas.grid(row=1, column=0, sticky='ew')
-
-        self._canvas.configure(yscrollcommand=v_scroll_for_canvas.set)
-        self._canvas.configure(xscrollcommand=h_scroll_for_canvas.set)
+        self._canvas = scrolled_canvas_frame.canvas  # fixme: remove self._canvas and use the right hand side instead
 
         scrolled_text_frame = ScrolledTextFrame(label_frame_for_text, horizontal_scroll=True)
         scrolled_text_frame.grid(row=0, column=0, sticky='news')
