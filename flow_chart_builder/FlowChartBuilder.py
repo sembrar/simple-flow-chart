@@ -277,13 +277,13 @@ class SinglePoint(ttk.Frame):
         try:
             x_delta = int(self._entry_int_dx.get())
         except ValueError:
-            x_delta = 0
+            x_delta = ""
 
         y_type = self._combo_y.get()
         try:
             y_delta = int(self._entry_int_dy.get())
         except ValueError:
-            y_delta = 0
+            y_delta = ""
 
         return (x_type, x_delta), (y_type, y_delta)
 
@@ -382,7 +382,7 @@ class LabelFramedIntEntry(LabelFramedWidget):
         try:
             return int(IntEntry.get(self._inner_widget))
         except ValueError:
-            return 0
+            return ""
 
     def set_data(self, data):
         try:
