@@ -26,6 +26,17 @@ DEFAULT_CONNECTOR_WIDTH = 1
 DEFAULT_BOX_OUTLINE_WIDTH = 1
 COLOR_EXECUTED_COMMAND_IN_TEXT = "green"
 
+BTN_TXT_RUN_NEXT_COMMAND = "Run next command"
+BTN_TXT_RUN_ALL_COMMANDS = "Run all commands"
+BTN_TXT_RUN_COMMAND_AT_CURSOR = "Run command at cursor"
+BTN_TXT_RESET_CANVAS = "Reset Canvas"
+BTN_TXT_RESET_COMMANDS = "Reset Commands to Input File content"
+BTN_TEXTS = (BTN_TXT_RUN_NEXT_COMMAND,
+             BTN_TXT_RUN_ALL_COMMANDS,
+             BTN_TXT_RUN_COMMAND_AT_CURSOR,
+             BTN_TXT_RESET_CANVAS,
+             BTN_TXT_RESET_COMMANDS)
+
 
 class FlowChart(tkinter.Tk):
 
@@ -77,23 +88,10 @@ class FlowChart(tkinter.Tk):
         buttons_frame = ttk.Frame(label_frame_for_text)
         buttons_frame.grid(row=1, column=0, sticky='ew')
 
-        button_run_a_flow_chart_command = ttk.Button(buttons_frame, text="Run next command")
-        button_run_a_flow_chart_command.grid(row=0, column=0, sticky='w')
-        button_run_a_flow_chart_command.bind("<ButtonRelease-1>", self._clicked_run_a_command)
-
-        button_run_all_commands = ttk.Button(buttons_frame, text="Run all commands")
-        button_run_all_commands.grid(row=1, column=0, sticky='w')
-        button_run_all_commands.bind("<ButtonRelease-1>", self._clicked_run_all_remaining_commands)
-
-        button_send_commands_to_canvas = ttk.Button(buttons_frame, text="Send commands json to canvas")
-        button_send_commands_to_canvas.grid(row=2, column=0, sticky='w')
-        button_send_commands_to_canvas.bind("<ButtonRelease-1>", self._re_read_commands_from_text)
-
-        button_reset_text = ttk.Button(buttons_frame, text="Reset commands text")
-        button_reset_text.grid(row=3, column=0, sticky='w')
-        if self._commands_text_file_path is None:
-            button_reset_text.state(["disabled"])
-        button_reset_text.bind("<ButtonRelease-1>", self._reset_commands_text_to_original)
+        for button_txt, btn_row in zip(BTN_TEXTS, range(len(BTN_TEXTS))):
+            button = ttk.Button(buttons_frame, text=button_txt)
+            button.grid(row=btn_row, column=0, sticky='w')
+            button.bind("<ButtonRelease-1>", self._clicked_ttk_button)
 
         # bind left-click-hold-and-drag to move flow chart boxes
         self._box_name_tag_being_moved = None
@@ -634,6 +632,16 @@ class FlowChart(tkinter.Tk):
 
             if command_index is not None and i == command_index:
                 break
+
+    def _clicked_ttk_button(self, event):
+        if not event.widget.instate(["!disabled", "hover"]):
+            return
+        button_functions = {}
+        button_text = event.widget.cget("text")
+        try:
+            button_functions[button_text]()
+        except KeyError:
+            print(f"There is no function attached to button '{button_text}'")
 
 
 def main():
