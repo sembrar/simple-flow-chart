@@ -3,6 +3,8 @@ from tkinter import ttk
 from .FlowChartBuilderText import FlowChartTextFrame
 from .FlowChartBuilderGUI import FlowChartFrame as FlowChartGUIFrame
 
+from scrolled_widgets.ScrolledFrameInFrame import ScrolledFrameInFrame
+
 
 class FlowChartBuilderFrame(ttk.Frame):
 
@@ -15,10 +17,12 @@ class FlowChartBuilderFrame(ttk.Frame):
         self.columnconfigure(0, weight=1)
 
         self._text_flow_chart = FlowChartTextFrame(self._notebook)
-        self._gui_flow_chart = FlowChartGUIFrame(self._notebook)
+        scrolled_frame_for_gui_flow_chart = ScrolledFrameInFrame(self._notebook)
+        self._gui_flow_chart = FlowChartGUIFrame(scrolled_frame_for_gui_flow_chart.inner_scrolled_frame)
+        self._gui_flow_chart.grid(row=0, column=0, sticky='news')
 
         self._notebook.add(self._text_flow_chart, text="Text for Commands")
-        self._notebook.add(self._gui_flow_chart, text="GUI for Commands")
+        self._notebook.add(scrolled_frame_for_gui_flow_chart, text="GUI for Commands")
 
         self._notebook.bind("<<NotebookTabChanged>>", self._notebook_tab_changed_event_raised)
         self._currently_ready_for_edit_is_text = True  # if False, then it is GUI that is being edited by user, this is
