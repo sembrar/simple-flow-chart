@@ -11,7 +11,10 @@ class FlowChartTextFrame(ScrolledTextFrame):
         super().__init__(master, horizontal_scroll=True, kwargs_for_frame=kwargs_for_frame, **kw_for_text_widget)
 
     def get_data(self):
-        str_commands = self.text.get("1.0", tk_constants.END).strip().split("\n")  # list[str]
+        text = self.text.get("1.0", tk_constants.END).strip()
+        if text == "":
+            return []
+        str_commands = text.split("\n")  # list[str]
         commands = []
         for c in str_commands:
             try:
@@ -33,6 +36,9 @@ class FlowChartTextFrame(ScrolledTextFrame):
                 continue
 
             command_type = d["type"]
+            if command_type == "":  # this can happen if data is from GUI builder and user didn't select any type yet
+                # for this command
+                continue
 
             ordered_dict = OrderedDict()
             ordered_dict["type"] = command_type
