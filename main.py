@@ -25,16 +25,16 @@ DEFAULT_CONNECTOR_WIDTH = 1
 DEFAULT_BOX_OUTLINE_WIDTH = 1
 COLOR_EXECUTED_COMMAND_IN_TEXT = "green"
 
-BTN_TXT_RUN_NEXT_COMMAND = "Run next command"
-BTN_TXT_RUN_ALL_COMMANDS = "Run all commands"
-BTN_TXT_RUN_COMMAND_AT_CURSOR = "Run command at cursor"
-BTN_TXT_RESET_CANVAS = "Reset Canvas"
-BTN_TXT_RESET_COMMANDS = "Reset Commands to Input File content"
-BTN_TEXTS = (BTN_TXT_RUN_NEXT_COMMAND,
-             BTN_TXT_RUN_ALL_COMMANDS,
-             BTN_TXT_RUN_COMMAND_AT_CURSOR,
-             BTN_TXT_RESET_CANVAS,
-             BTN_TXT_RESET_COMMANDS)
+BTN_TXT_RUN_ALL_COMMANDS = "Reset canvas and Run all commands"
+BTN_TXT_LOAD_FILE = "Load commands from a file"
+BTN_TXT_RESET_COMMANDS = "Reload commands from the file"
+BTN_TXT_OVERWRITE_FILE = "Overwrite commands to the file"
+BTN_TXT_SAVE_COMMANDS_TO_NEW_FILE = "Save commands to a new file"
+BTN_TEXTS = (BTN_TXT_RUN_ALL_COMMANDS,
+             BTN_TXT_LOAD_FILE,
+             BTN_TXT_RESET_COMMANDS,
+             BTN_TXT_OVERWRITE_FILE,
+             BTN_TXT_SAVE_COMMANDS_TO_NEW_FILE)
 
 
 class FlowChart(tkinter.Tk):
