@@ -8,6 +8,7 @@ from tkinter import messagebox
 from tkinter import font
 
 from scrolled_widgets.ScrolledCanvasFrame import ScrollCanvasFrame
+from flow_chart_builder.FlowChartBuilderFrame import FlowChartBuilderFrame
 
 import json
 
@@ -53,8 +54,8 @@ class FlowChart(tkinter.Tk):
         # the above is saved in var to be able to change title
         paned_window.add(self._label_frame_for_canvas)
 
-        label_frame_for_text = ttk.Labelframe(paned_window, text="Text: Commands")
-        paned_window.add(label_frame_for_text)
+        label_frame_for_commands_and_buttons = ttk.Labelframe(paned_window, text="Flow chart commands")
+        paned_window.add(label_frame_for_commands_and_buttons)
 
         self._scrolled_canvas_frame = ScrollCanvasFrame(self._label_frame_for_canvas, bg="light blue")
         self._scrolled_canvas_frame.grid(row=0, column=0, sticky='news')
@@ -62,6 +63,11 @@ class FlowChart(tkinter.Tk):
         self._label_frame_for_canvas.columnconfigure(0, weight=1)
         self._canvas = self._scrolled_canvas_frame.canvas
         # fixme: remove self._canvas and use the right hand side instead
+
+        self._flow_chart_builder_frame = FlowChartBuilderFrame(label_frame_for_commands_and_buttons)
+        self._flow_chart_builder_frame.grid(row=0, column=0, sticky='nsew')
+        label_frame_for_commands_and_buttons.rowconfigure(0, weight=1)
+        label_frame_for_commands_and_buttons.columnconfigure(0, weight=1)
 
         self._commands_read_from_input_file = None
         if commands_text_file_path is not None:
@@ -73,7 +79,7 @@ class FlowChart(tkinter.Tk):
             except json.JSONDecodeError:
                 pass
 
-        buttons_frame = ttk.Frame(label_frame_for_text)
+        buttons_frame = ttk.Frame(label_frame_for_commands_and_buttons)
         buttons_frame.grid(row=1, column=0, sticky='ew')
 
         for button_txt, btn_row in zip(BTN_TEXTS, range(len(BTN_TEXTS))):
