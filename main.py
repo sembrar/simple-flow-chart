@@ -528,6 +528,7 @@ class FlowChart(tkinter.Tk):
             return
         button_functions = {
             BTN_TXT_LOAD_FILE: self._load_commands_from_file,
+            BTN_TXT_RESET_COMMANDS: self._reload_commands_from_file,
         }
         button_text = event.widget.cget("text")
         try:
@@ -548,8 +549,15 @@ class FlowChart(tkinter.Tk):
         filename = filedialog.askopenfilename(title="Choose file", initialdir=initial_dir)
         if filename == "":
             print("Cancelled load from file")
+            return
         print("Read from", filename)
         self._commands_text_file_path = filename
+        self._reload_commands_from_file()
+
+    def _reload_commands_from_file(self):
+        if self._commands_text_file_path is None:
+            print("No file is read previously")
+            return
         try:
             with open(self._commands_text_file_path) as f:
                 commands = json.load(f)
