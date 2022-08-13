@@ -530,6 +530,7 @@ class FlowChart(tkinter.Tk):
             BTN_TXT_LOAD_FILE: self._load_commands_from_file,
             BTN_TXT_RESET_COMMANDS: self._reload_commands_from_file,
             BTN_TXT_OVERWRITE_FILE: self._overwrite_commands_to_file,
+            BTN_TXT_SAVE_COMMANDS_TO_NEW_FILE: self._save_commands_to_new_file,
         }
         button_text = event.widget.cget("text")
         try:
@@ -538,6 +539,15 @@ class FlowChart(tkinter.Tk):
             print(f"There is no function attached to button '{button_text}'")
 
     def _load_commands_from_file(self):
+        filename = filedialog.askopenfilename(title="Choose file", initialdir=self._get_initial_dir())
+        if filename == "":
+            print("Cancelled load from file")
+            return
+        print("Read from", filename)
+        self._commands_text_file_path = filename
+        self._reload_commands_from_file()
+
+    def _get_initial_dir(self):
         if self._commands_text_file_path is None:
             program_dir = os.path.split(sys.argv[0])[0]
             data_dir = os.path.join(program_dir, "data")
@@ -547,13 +557,7 @@ class FlowChart(tkinter.Tk):
                 initial_dir = program_dir
         else:
             initial_dir = os.path.split(self._commands_text_file_path)[0]
-        filename = filedialog.askopenfilename(title="Choose file", initialdir=initial_dir)
-        if filename == "":
-            print("Cancelled load from file")
-            return
-        print("Read from", filename)
-        self._commands_text_file_path = filename
-        self._reload_commands_from_file()
+        return initial_dir
 
     def _reload_commands_from_file(self):
         if self._commands_text_file_path is None:
@@ -579,6 +583,17 @@ class FlowChart(tkinter.Tk):
                 json.dump(self._flow_chart_builder_frame.get_data(), f)
         except IOError:
             print("Couldn't overwrite", self._commands_text_file_path)
+
+    def _save_commands_to_new_file(self):
+        filename = filedialog.asksaveasfilename(title="Choose save file", initialdir=self._get_initial_dir())
+        if filename == "":
+            print("Cancelled SaveAs")
+            return
+        try:
+            with open(filename, 'w') as f:
+                json.dump(self._flow_chart_builder_frame.get_data(), f)
+        except IOError:
+            print("Couldn't write to", filename)
 
 
 def main():
