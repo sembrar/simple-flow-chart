@@ -7,11 +7,9 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import font
 
-from scrolled_widgets.ScrolledTextFrame import ScrolledTextFrame
 from scrolled_widgets.ScrolledCanvasFrame import ScrollCanvasFrame
 
 import json
-from collections import OrderedDict
 
 
 PADDING_FOR_NEW_OBJECT = 50
@@ -65,22 +63,11 @@ class FlowChart(tkinter.Tk):
         self._canvas = self._scrolled_canvas_frame.canvas
         # fixme: remove self._canvas and use the right hand side instead
 
-        scrolled_text_frame = ScrolledTextFrame(label_frame_for_text, horizontal_scroll=True)
-        scrolled_text_frame.grid(row=0, column=0, sticky='news')
-        label_frame_for_text.rowconfigure(0, weight=1)
-        label_frame_for_text.columnconfigure(0, weight=1)
-        self._text = scrolled_text_frame.text
-
-        self._commands = []
-        self._cur_command_index = 0
-
-        self._original_text = None
+        self._commands_read_from_input_file = None
         if commands_text_file_path is not None:
             try:
                 with open(commands_text_file_path) as f:
-                    self._commands = json.load(f)
-                    self._write_commands_to_text()
-                    self._original_text = self._text.get("1.0", tkinter.END)
+                    self._commands_read_from_input_file = json.load(f)
             except IOError:
                 pass
             except json.JSONDecodeError:
@@ -108,67 +95,40 @@ class FlowChart(tkinter.Tk):
         self._connector_width = DEFAULT_CONNECTOR_WIDTH
         self._box_outline_width = DEFAULT_BOX_OUTLINE_WIDTH
 
-        self._text.tag_config("command-executed", foreground=COLOR_EXECUTED_COMMAND_IN_TEXT)
-
-    def _re_read_commands_from_text(self, event=None):
-        if event is not None:
-            if not event.widget.instate(["!disabled", "hover"]):
-                return
-
-        try:
-            self._commands = json.loads("[" + self._text.get("1.0", tkinter.END) + "]")
-            self._canvas.delete("canvas-obj")
-            self._text.tag_remove("command-executed", "1.0", tkinter.END)
-            if event is not None:
-                messagebox.showinfo("Success", "{} commands read".format(len(self._commands)))
-        except json.JSONDecodeError:
-            messagebox.showerror("Bad JSON", "Commands text JSON couldn't be decoded")
-            self._commands = []
-        self._cur_command_index = 0
-
-    def _reset_commands_text_to_original(self, event):
-        if not event.widget.instate(["!disabled", "hover"]):
-            return
-        self._text.tag_remove("command-executed", "1.0", tkinter.END)
-        self._text.delete("1.0", tkinter.END)
-        self._text.insert("1.0", self._original_text)
-        self._re_read_commands_from_text()
-
     def destroy(self):
         if self._commands_text_file_path is not None:
-            text = self._text.get("1.0", tkinter.END)
-            if text.strip() != self._original_text.strip():
-                save_result = messagebox.askyesno(
-                    "Save changes?",
-                    "The commands text has changed.\n"
-                    "Do you want to overwrite the input file?"
-                )
-                if save_result:
-                    with open(self._commands_text_file_path, 'w') as f:
-                        f.write("[\n")
-                        f.write(text.strip())
-                        f.write("\n]\n")
-                    print("Commands overwritten to", self._commands_text_file_path)
-                else:
-                    print("Changed discarded")
+            # fixme the following check breaks after replacing self._original_text with self._commands_read_from...
+            # text = self._text.get("1.0", tkinter.END)
+            # if text.strip() != self._original_text.strip():
+            #     save_result = messagebox.askyesno(
+            #         "Save changes?",
+            #         "The commands text has changed.\n"
+            #         "Do you want to overwrite the input file?"
+            #     )
+            #     if save_result:
+            #         with open(self._commands_text_file_path, 'w') as f:
+            #             f.write("[\n")
+            #             f.write(text.strip())
+            #             f.write("\n]\n")
+            #         print("Commands overwritten to", self._commands_text_file_path)
+            #     else:
+            #         print("Changed discarded")
+            pass
         tkinter.Tk.destroy(self)
 
     def _run_a_command(self):
 
         try:
             try:
-                command_data = self._commands[self._cur_command_index]
-                self._cur_command_index += 1
+                command_data = None
+                raise IndexError  # fixme get command data above
             except IndexError:
                 print("No more commands")
                 return
 
             command_type = command_data["type"]
 
-            self._text.tag_add(
-                "command-executed",
-                "{}.0".format(self._cur_command_index), "{}.0 lineend".format(self._cur_command_index)
-            )  # text line-indices start at 1, but, _cur_command_index is used directly because it's already incremented
+            # todo set that the command is executed in the builder
 
             if command_type == "title":
                 self._label_frame_for_canvas.configure(text=command_data["text"])
@@ -486,21 +446,6 @@ class FlowChart(tkinter.Tk):
         x1, y1, x2, y2 = self._canvas.bbox(obj_id)
         return obj_id, x, y, x1, y1, x2, y2, tags
 
-    def _clicked_run_a_command(self, event=None):
-        if not event.widget.instate(["!disabled", "hover"]):
-            return
-        self._run_a_command()
-        while self._cur_command_index < len(self._commands) and self._commands[self._cur_command_index].get(
-                "autostart", False):
-            self._run_a_command()
-
-    def _clicked_run_all_remaining_commands(self, event):
-        if not event.widget.instate(["!disabled", "hover"]):
-            return
-
-        while self._cur_command_index < len(self._commands):
-            self._run_a_command()
-
     def _left_button_click_on_canvas(self, event):
         # print("Left button click release on canvas")
         try:
@@ -522,14 +467,16 @@ class FlowChart(tkinter.Tk):
 
                 self._moving_total_dx = 0
                 self._moving_total_dy = 0
-                for i in range(len(self._commands)):  # get any existing dx and dy
-                    try:
-                        if self._commands[i]["name"] == self._box_name_tag_being_moved[5:]:  # [5: as name: added in tag
-                            self._moving_total_dx = self._commands[i]["dx"]
-                            self._moving_total_dy = self._commands[i]["dy"]
-                            break
-                    except KeyError:
-                        pass
+
+                # fixme the following code needs to be changed after using the new FlowChartBuilder
+                # for i in range(len(self._commands)):  # get any existing dx and dy
+                #     try:
+                #         if self._commands[i]["name"] == self._box_name_tag_being_moved[5:]:  # [5: as name: added in tag
+                #             self._moving_total_dx = self._commands[i]["dx"]
+                #             self._moving_total_dy = self._commands[i]["dy"]
+                #             break
+                #     except KeyError:
+                #         pass
 
                 break
 
@@ -540,16 +487,17 @@ class FlowChart(tkinter.Tk):
         if self._box_name_tag_being_moved is None:
             return
 
-        for i in range(len(self._commands)):
-            try:
-                if self._commands[i]["name"] == self._box_name_tag_being_moved[5:]:  # [5:] as "name:" is added in tag
-                    # print("Found command:", self._commands[i])
-                    self._commands[i]["dx"] = self._moving_total_dx
-                    self._commands[i]["dy"] = self._moving_total_dy
-                    self._write_commands_to_text(i)
-                    break
-            except KeyError:
-                pass
+        # fixme the following code needs to be changed after using the new FlowChartBuilder
+        # for i in range(len(self._commands)):
+        #     try:
+        #         if self._commands[i]["name"] == self._box_name_tag_being_moved[5:]:  # [5:] as "name:" is added in tag
+        #             # print("Found command:", self._commands[i])
+        #             self._commands[i]["dx"] = self._moving_total_dx
+        #             self._commands[i]["dy"] = self._moving_total_dy
+        #             self._write_commands_to_text(i)
+        #             break
+        #     except KeyError:
+        #         pass
 
         self._box_name_tag_being_moved = None
 
@@ -576,42 +524,6 @@ class FlowChart(tkinter.Tk):
         if corner == "east":
             return x2, int((y1 + y2) / 2)
         raise ValueError("corner {} is unknown".format(corner))
-
-    def _write_commands_to_text(self, command_index=None):
-
-        keys_that_appear_in_commands = (
-            "type", "name", "text", "angle", "dx", "dy", "start", "end", "points", "color", "width",
-            "label", "label-dx", "label-dy", "label-color", "size", "weight",
-        )
-        their_indices = dict(zip(keys_that_appear_in_commands, range(len(keys_that_appear_in_commands))))
-
-        if command_index is None:
-            self._text.delete("1.0", tkinter.END)
-        else:
-            self._text.delete("{}.0".format(command_index + 1), "{}.0 lineend".format(command_index + 1))
-
-        for i in range(len(self._commands)):
-            if command_index is not None and i != command_index:
-                continue
-
-            sorted_keys = sorted(self._commands[i].keys())
-            # sorted by alphabetic order
-
-            sorted_keys.sort(key=lambda x: their_indices.get(x, len(keys_that_appear_in_commands)))
-            # stable sorted by index in their_indices else keep the alphabetic order
-
-            commands_ordered_dict = OrderedDict()
-            for key in sorted_keys:
-                commands_ordered_dict[key] = self._commands[i][key]
-
-            self._text.insert(
-                "{}.0".format(i + 1),
-                "{}{}{}".format(json.dumps(commands_ordered_dict),
-                                "," if len(self._commands) - i > 1 else "",
-                                "\n" if command_index is None else ""))
-
-            if command_index is not None and i == command_index:
-                break
 
     def _clicked_ttk_button(self, event):
         if not event.widget.instate(["!disabled", "hover"]):
