@@ -1,11 +1,13 @@
 import argparse
 import os
 import math
+import sys
 
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import font
+from tkinter import filedialog
 
 from scrolled_widgets.ScrolledCanvasFrame import ScrollCanvasFrame
 from flow_chart_builder.FlowChartBuilderFrame import FlowChartBuilderFrame
@@ -68,16 +70,6 @@ class FlowChart(tkinter.Tk):
         self._flow_chart_builder_frame.grid(row=0, column=0, sticky='nsew')
         label_frame_for_commands_and_buttons.rowconfigure(0, weight=1)
         label_frame_for_commands_and_buttons.columnconfigure(0, weight=1)
-
-        self._commands_read_from_input_file = None
-        if commands_text_file_path is not None:
-            try:
-                with open(commands_text_file_path) as f:
-                    self._commands_read_from_input_file = json.load(f)
-            except IOError:
-                pass
-            except json.JSONDecodeError:
-                pass
 
         buttons_frame = ttk.Frame(label_frame_for_commands_and_buttons)
         buttons_frame.grid(row=1, column=0, sticky='ew')
@@ -534,12 +526,40 @@ class FlowChart(tkinter.Tk):
     def _clicked_ttk_button(self, event):
         if not event.widget.instate(["!disabled", "hover"]):
             return
-        button_functions = {}
+        button_functions = {
+            BTN_TXT_LOAD_FILE: self._load_commands_from_file,
+        }
         button_text = event.widget.cget("text")
         try:
             button_functions[button_text]()
         except KeyError:
             print(f"There is no function attached to button '{button_text}'")
+
+    def _load_commands_from_file(self):
+        if self._commands_text_file_path is None:
+            program_dir = os.path.split(sys.argv[0])[0]
+            data_dir = os.path.join(program_dir, "data")
+            if os.path.isdir(data_dir):
+                initial_dir = data_dir
+            else:
+                initial_dir = program_dir
+        else:
+            initial_dir = os.path.split(self._commands_text_file_path)[0]
+        filename = filedialog.askopenfilename(title="Choose file", initialdir=initial_dir)
+        if filename == "":
+            print("Cancelled load from file")
+        print("Read from", filename)
+        self._commands_text_file_path = filename
+        try:
+            with open(self._commands_text_file_path) as f:
+                commands = json.load(f)
+        except IOError:
+            print("No file:", self._commands_text_file_path)
+            return
+        except json.JSONDecodeError:
+            print("Couldn't decode json in file:", self._commands_text_file_path)
+            return
+        self._flow_chart_builder_frame.set_data(commands)  # fixme this could raise an error
 
 
 def main():
