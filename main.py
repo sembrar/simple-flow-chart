@@ -529,6 +529,7 @@ class FlowChart(tkinter.Tk):
         button_functions = {
             BTN_TXT_LOAD_FILE: self._load_commands_from_file,
             BTN_TXT_RESET_COMMANDS: self._reload_commands_from_file,
+            BTN_TXT_OVERWRITE_FILE: self._overwrite_commands_to_file,
         }
         button_text = event.widget.cget("text")
         try:
@@ -568,6 +569,16 @@ class FlowChart(tkinter.Tk):
             print("Couldn't decode json in file:", self._commands_text_file_path)
             return
         self._flow_chart_builder_frame.set_data(commands)  # fixme this could raise an error
+
+    def _overwrite_commands_to_file(self):
+        if self._commands_text_file_path is None:
+            print("No file is read previously")
+            return
+        try:
+            with open(self._commands_text_file_path, 'w') as f:
+                json.dump(self._flow_chart_builder_frame.get_data(), f)
+        except IOError:
+            print("Couldn't overwrite", self._commands_text_file_path)
 
 
 def main():

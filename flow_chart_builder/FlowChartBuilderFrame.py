@@ -69,6 +69,12 @@ class FlowChartBuilderFrame(ttk.Frame):
         else:
             self._gui_flow_chart.set_data(data)
 
+    def get_data(self):
+        if self._currently_ready_for_edit_is_text:
+            return self._text_flow_chart.get_data()
+        else:
+            return self._gui_flow_chart.get_data()
+
 
 def main():
     from tkinter import Tk
