@@ -79,14 +79,6 @@ class FlowChart(tkinter.Tk):
             button.grid(row=btn_row, column=0, sticky='w')
             button.bind("<ButtonRelease-1>", self._clicked_ttk_button)
 
-        # bind left-click-hold-and-drag to move flow chart boxes
-        self._box_name_tag_being_moved = None
-        self._moving_old_x, self._moving_old_y = 0, 0
-        self._moving_total_dx, self._moving_total_dy = 0, 0
-        self._canvas.bind("<Button-1>", self._left_button_click_on_canvas)
-        self._canvas.bind("<Motion>", self._mouse_move_on_canvas)
-        self._canvas.bind("<ButtonRelease-1>", self._left_button_release_on_canvas)
-
         self._font = font.Font()
         # print(self._font.cget("size"))  # it is 0 by default, if needed font of n pixels height, use -n
         # print(self._font.cget("weight"))  # it is by default "normal", can give "bold"
@@ -443,72 +435,6 @@ class FlowChart(tkinter.Tk):
                                      justify=tkinter.CENTER, font=self._font)
         x1, y1, x2, y2 = self._canvas.bbox(obj_id)
         return obj_id, x, y, x1, y1, x2, y2, tags
-
-    def _left_button_click_on_canvas(self, event):
-        # print("Left button click release on canvas")
-        try:
-            closest_obj = self._canvas.find_closest(self._canvas.canvasx(event.x), self._canvas.canvasy(event.y))[0]
-        except IndexError:
-            # print("No closest object found")
-            return
-
-        tags_closest_obj = self._canvas.gettags(closest_obj)
-        if "connector" in tags_closest_obj:  # connectors are automatic, they should not be moved
-            return
-
-        self._box_name_tag_being_moved = None
-        for tag in tags_closest_obj:
-            if tag.startswith("name:"):
-                self._box_name_tag_being_moved = tag
-                self._moving_old_x = event.x
-                self._moving_old_y = event.y
-
-                self._moving_total_dx = 0
-                self._moving_total_dy = 0
-
-                # fixme the following code needs to be changed after using the new FlowChartBuilder
-                # for i in range(len(self._commands)):  # get any existing dx and dy
-                #     try:
-                #         if self._commands[i]["name"] == self._box_name_tag_being_moved[5:]:  # [5: as name: added in tag
-                #             self._moving_total_dx = self._commands[i]["dx"]
-                #             self._moving_total_dy = self._commands[i]["dy"]
-                #             break
-                #     except KeyError:
-                #         pass
-
-                break
-
-        # print("Closest:", closest_obj, "Tags:", tags_closest_obj)
-
-    def _left_button_release_on_canvas(self, _):
-        # print("Left button release on canvas")
-        if self._box_name_tag_being_moved is None:
-            return
-
-        # fixme the following code needs to be changed after using the new FlowChartBuilder
-        # for i in range(len(self._commands)):
-        #     try:
-        #         if self._commands[i]["name"] == self._box_name_tag_being_moved[5:]:  # [5:] as "name:" is added in tag
-        #             # print("Found command:", self._commands[i])
-        #             self._commands[i]["dx"] = self._moving_total_dx
-        #             self._commands[i]["dy"] = self._moving_total_dy
-        #             self._write_commands_to_text(i)
-        #             break
-        #     except KeyError:
-        #         pass
-
-        self._box_name_tag_being_moved = None
-
-    def _mouse_move_on_canvas(self, event):
-        if self._box_name_tag_being_moved is None:
-            return
-        dx = event.x - self._moving_old_x
-        dy = event.y - self._moving_old_y
-        self._canvas.move(self._box_name_tag_being_moved, dx, dy)
-        self._moving_old_x = event.x
-        self._moving_old_y = event.y
-        self._moving_total_dx += dx
-        self._moving_total_dy += dy
 
     @staticmethod
     def _get_point_from_bbox_and_corner(bbox, corner):
