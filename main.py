@@ -85,6 +85,9 @@ class FlowChart(tkinter.Tk):
         self._connector_width = DEFAULT_CONNECTOR_WIDTH
         self._box_outline_width = DEFAULT_BOX_OUTLINE_WIDTH
 
+        if self._commands_text_file_path is not None:
+            self._reload_commands_from_file()
+
     def destroy(self):
         if self._commands_text_file_path is not None:
             # fixme the following check breaks after replacing self._original_text with self._commands_read_from...
