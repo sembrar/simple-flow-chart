@@ -18,7 +18,8 @@ class FlowChartBuilderFrame(ttk.Frame):
 
         self._text_flow_chart = FlowChartTextFrame(self._notebook)
         scrolled_frame_for_gui_flow_chart = ScrolledFrameInFrame(self._notebook)
-        self._gui_flow_chart = FlowChartGUIFrame(scrolled_frame_for_gui_flow_chart.inner_scrolled_frame)
+        self._gui_flow_chart = FlowChartGUIFrame(scrolled_frame_for_gui_flow_chart.inner_scrolled_frame,
+                                                 put_buttons_to_the_left=True)
         self._gui_flow_chart.grid(row=0, column=0, sticky='news')
 
         self._notebook.add(self._text_flow_chart, text="Text for Commands")
