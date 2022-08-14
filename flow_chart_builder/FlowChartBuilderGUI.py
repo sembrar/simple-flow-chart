@@ -325,6 +325,9 @@ class Points(FrameWithAddDeleteMoveChildren):
             single_point_object = child_frame.nametowidget(child_frame.inner_widget_name)  # type: SinglePoint
             single_point_object.set_data(each_data_tuple)
 
+    def is_empty(self):
+        return len(self._children_frames) == 0
+
 
 class LabelFramedWidget(ttk.Labelframe):
 
@@ -344,6 +347,9 @@ class LabelFramedWidget(ttk.Labelframe):
     def set_data(self, data):
         raise NotImplementedError
 
+    def is_empty(self):
+        raise NotImplementedError
+
 
 class LabelFramedEntry(LabelFramedWidget):
 
@@ -358,6 +364,11 @@ class LabelFramedEntry(LabelFramedWidget):
         inner_widget = self._inner_widget  # type: ttk.Entry
         inner_widget.delete(0, tkinter.END)
         inner_widget.insert(0, data)
+
+    def is_empty(self):
+        if self.get_data() == "":
+            return True
+        return False
 
 
 class LabelFramedIntEntry(LabelFramedWidget):
@@ -381,6 +392,11 @@ class LabelFramedIntEntry(LabelFramedWidget):
         inner_widget.delete(0, tkinter.END)
         inner_widget.insert(0, value)
 
+    def is_empty(self):
+        if self.get_data() == "":
+            return True
+        return False
+
 
 class LabelFramedSelectOnlyCombobox(LabelFramedWidget):
 
@@ -394,6 +410,11 @@ class LabelFramedSelectOnlyCombobox(LabelFramedWidget):
     def set_data(self, data):
         inner_widget = self._inner_widget  # type: SelectOnlyCombobox
         inner_widget.set(data)  # Combobox provides this direct set method
+
+    def is_empty(self):
+        if self.get_data() == "":
+            return True
+        return False
 
 
 class LabelFramedCombosNameAndDirection(LabelFramedWidget):
@@ -415,6 +436,11 @@ class LabelFramedCombosNameAndDirection(LabelFramedWidget):
         inner_widget.name_combo.set(name)
         inner_widget.direction_combo.set(direction)
 
+    def is_empty(self):
+        if self.get_data() == ("", ""):
+            return True
+        return False
+
 
 class LabelFramedPoints(LabelFramedWidget):
 
@@ -429,6 +455,10 @@ class LabelFramedPoints(LabelFramedWidget):
     def set_data(self, data):
         inner_widget = self._inner_widget  # type: Points
         inner_widget.set_data(data)
+
+    def is_empty(self):
+        inner_widget = self._inner_widget  # type: Points
+        return inner_widget.is_empty()
 
 
 class SingleCommandFrame(ttk.Frame):
@@ -494,6 +524,8 @@ class SingleCommandFrame(ttk.Frame):
         children = self.winfo_children()
         for child in children:
             if isinstance(child, LabelFramedWidget):
+                if child.is_empty():
+                    continue
                 d[child.cget("text").lower()] = child.get_data()
         return d
 
