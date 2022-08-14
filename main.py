@@ -106,16 +106,9 @@ class FlowChart(tkinter.Tk):
             pass
         tkinter.Tk.destroy(self)
 
-    def _run_a_command(self):
+    def _run_a_command(self, command_data):
 
         try:
-            try:
-                command_data = None
-                raise IndexError  # fixme get command data above
-            except IndexError:
-                print("No more commands")
-                return
-
             command_type = command_data["type"]
 
             # todo set that the command is executed in the builder
@@ -457,6 +450,7 @@ class FlowChart(tkinter.Tk):
             BTN_TXT_RESET_COMMANDS: self._reload_commands_from_file,
             BTN_TXT_OVERWRITE_FILE: self._overwrite_commands_to_file,
             BTN_TXT_SAVE_COMMANDS_TO_NEW_FILE: self._save_commands_to_new_file,
+            BTN_TXT_RUN_ALL_COMMANDS: self._reset_canvas_and_run_commands,
         }
         button_text = event.widget.cget("text")
         try:
@@ -520,6 +514,12 @@ class FlowChart(tkinter.Tk):
                 json.dump(self._flow_chart_builder_frame.get_data(), f)
         except IOError:
             print("Couldn't write to", filename)
+
+    def _reset_canvas_and_run_commands(self):
+        self._canvas.delete("canvas-obj")
+        commands = self._flow_chart_builder_frame.get_data()
+        for c in commands:
+            self._run_a_command(c)
 
 
 def main():
