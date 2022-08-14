@@ -32,11 +32,13 @@ BTN_TXT_LOAD_FILE = "Load commands from a file"
 BTN_TXT_RESET_COMMANDS = "Reload commands from the file"
 BTN_TXT_OVERWRITE_FILE = "Overwrite commands to the file"
 BTN_TXT_SAVE_COMMANDS_TO_NEW_FILE = "Save commands to a new file"
+BTN_TXT_SAVE_VECTOR_IMAGE = "Save postscript vector image of canvas"
 BTN_TEXTS = (BTN_TXT_RUN_ALL_COMMANDS,
              BTN_TXT_LOAD_FILE,
              BTN_TXT_RESET_COMMANDS,
              BTN_TXT_OVERWRITE_FILE,
-             BTN_TXT_SAVE_COMMANDS_TO_NEW_FILE)
+             BTN_TXT_SAVE_COMMANDS_TO_NEW_FILE,
+             BTN_TXT_SAVE_VECTOR_IMAGE)
 
 
 class FlowChart(tkinter.Tk):
@@ -454,6 +456,7 @@ class FlowChart(tkinter.Tk):
             BTN_TXT_OVERWRITE_FILE: self._overwrite_commands_to_file,
             BTN_TXT_SAVE_COMMANDS_TO_NEW_FILE: self._save_commands_to_new_file,
             BTN_TXT_RUN_ALL_COMMANDS: self._reset_canvas_and_run_commands,
+            BTN_TXT_SAVE_VECTOR_IMAGE: self._save_postscript_vector_image_of_canvas,
         }
         button_text = event.widget.cget("text")
         try:
@@ -523,6 +526,26 @@ class FlowChart(tkinter.Tk):
         commands = self._flow_chart_builder_frame.get_data()
         for c in commands:
             self._run_a_command(c)
+
+    def _save_postscript_vector_image_of_canvas(self):
+        self._scrolled_canvas_frame.reset_scroll_region(PADDING_FOR_NEW_OBJECT)
+        full_bbox = self._canvas.cget("scrollregion")
+        print([full_bbox])
+        if full_bbox == "":
+            print("There are no objects on the canvas.")
+            return
+        output_file_name = filedialog.asksaveasfilename(title="Choose filename to save vector image",
+                                                        initialdir=self._get_initial_dir(),
+                                                        defaultextension=".eps",
+                                                        filetypes=[("postscript files", ".eps")])
+        if output_file_name == "":
+            print("Cacelled: Save vector image of canvas")
+            return
+        x1, y1, x2, y2 = map(int, full_bbox.split())
+        self._canvas.postscript(colormode="color", file=output_file_name,
+                                x=x1, y=y1,
+                                height=y2-y1, width=x2-x1)
+        print("Vector image saved to", output_file_name)
 
 
 def main():
