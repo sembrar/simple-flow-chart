@@ -83,7 +83,7 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         self._button_add = ttk.Button(self, text="+", width=5)
         self._button_add.grid(row=0, column=0, sticky='w')
 
-        self._button_add.bind("<Button-1>", self._clicked_button_add)
+        self._button_add.bind("<ButtonRelease-1>", self._clicked_button_add)
 
     def _clicked_button_add(self, event):
         if not event.widget.instate(["!disabled", "hover"]):
@@ -143,10 +143,10 @@ class FrameWithAddDeleteMoveChildren(ttk.Frame):
         button_delete.name_of_child = name_of_the_child_frame
         button_add_above.name_of_child = name_of_the_child_frame
 
-        button_move_up.bind("<Button-1>", self._clicked_up_button_in_child_frame)
-        button_move_down.bind("<Button-1>", self._clicked_down_button_in_child_frame)
-        button_delete.bind("<Button-1>", self._clicked_delete_in_child_frame)
-        button_add_above.bind("<Button-1>", self._clicked_add_above_button_in_child_frame)
+        button_move_up.bind("<ButtonRelease-1>", self._clicked_up_button_in_child_frame)
+        button_move_down.bind("<ButtonRelease-1>", self._clicked_down_button_in_child_frame)
+        button_delete.bind("<ButtonRelease-1>", self._clicked_delete_in_child_frame)
+        button_add_above.bind("<ButtonRelease-1>", self._clicked_add_above_button_in_child_frame)
 
     def _reset_grid_configuration_of_children(self):
         for i in range(len(self._children_frames)):
