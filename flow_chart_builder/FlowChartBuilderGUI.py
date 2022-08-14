@@ -423,10 +423,12 @@ class LabelFramedPoints(LabelFramedWidget):
         super().__init__(master, label_text, Points, kwargs_for_label_frame, **kwargs_for_inner_widget)
 
     def get_data(self):
-        pass  # todo
+        inner_widget = self._inner_widget  # type: Points
+        return inner_widget.get_data()
 
     def set_data(self, data):
-        pass  # todo
+        inner_widget = self._inner_widget  # type: Points
+        inner_widget.set_data(data)
 
 
 class SingleCommandFrame(ttk.Frame):
