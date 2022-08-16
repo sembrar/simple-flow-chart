@@ -187,6 +187,8 @@ class FlowChart(tkinter.Tk):
                             x = min(start_x, end_x)
                         elif which_x == "max_x":
                             x = max(start_x, end_x)
+                        elif which_x == "mid_x":
+                            x = int((start_x + end_x) / 2)
                         else:
                             raise ValueError("which_x is unknown: {}".format(which_x))
                         x += x_inc
@@ -199,6 +201,8 @@ class FlowChart(tkinter.Tk):
                             y = min(start_y, end_y)
                         elif which_y == "max_y":
                             y = max(start_y, end_y)
+                        elif which_y == "mid_y":
+                            y = int((start_y + end_y) / 2)
                         else:
                             raise ValueError("which_y is unknown: {}".format(which_y))
                         y += y_inc
