@@ -497,7 +497,7 @@ class SingleCommandFrame(ttk.Frame):
                     self, label_text=d, func_to_get_names=self._function_to_get_names_of_boxes)
             elif d == "autostart":
                 label_framed_widget = LabelFramedSelectOnlyCombobox(self, label_text=d, values=("False", "True"))
-            elif d == "dx" or d == "dy" or d == "label-dx" or d == "label-dy" or d == "width" or d == "size":
+            elif d == "dx" or d == "dy" or d == "angle" or d == "label-dx" or d == "label-dy" or d == "width" or d == "size":
                 label_framed_widget = LabelFramedIntEntry(self, label_text=d, width=INT_ENTRY_WIDTH)
             elif d == "points":
                 label_framed_widget = LabelFramedPoints(self, label_text=d)
